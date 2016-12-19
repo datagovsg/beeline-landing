@@ -98,7 +98,7 @@ server.route({
             endLat: request.query.destination_lat,
             endLng: request.query.destination_lng,
             time: 8 * 3600 * 1000,
-            settings: JSON.stringify(request.query.settings)
+            settings: request.query.settings
           }
         }))
 

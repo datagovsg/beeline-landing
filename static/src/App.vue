@@ -90,6 +90,17 @@
               step="1">
           </label>
         </div>
+        <div>
+          Data Source
+          <label>
+            <input type="radio" value="ezlink" v-model="searchSettings.dataSource" />
+            EZ Link
+          </label>
+          <label>
+            <input type="radio" value="suggestions" v-model="searchSettings.dataSource" />
+            Beeline Suggestions
+          </label>
+        </div>
         <button class="btn btn-default"
           @click="updateProposedRoutes">Suggest something else!</button>
       </div>
@@ -142,7 +153,8 @@ export default {
         startClusterRadius: 4000,
         endClusterRadius: 4000,
         startWalkingDistance: 300,
-        endWalkingDistance: 300
+        endWalkingDistance: 300,
+        dataSource: 'suggestions'
       }
     }
   },
