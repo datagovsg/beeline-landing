@@ -1,6 +1,6 @@
 <template>
   <div>
-    <form class="search-form">
+    <form class="search-form" ref="searchForm">
       <h1>Search for a Ride!</h1>
       <div>
         <gmap-place-input
@@ -22,18 +22,39 @@
           @place_changed="updatePlace('destination', latLngFromPlace($event))"></gmap-place-input>
       </div>
 
-      <div>
-        <map-preview :center="origin"  @position-updated="updateLatLng('origin', $event)"></map-preview>
-        <map-preview :center="destination"  @position-updated="updateLatLng('destination', $event)"></map-preview>
+      <div class="map-preview-panes">
+        <map-preview
+          :center="origin"
+          @position-updated="updateLatLng('origin', $event)"
+          class="map-preview">
+          <route-viewer :route="disp.selectedRoute"
+            v-if="disp.selectedRoute">
+          </route-viewer>
+          <similar-requests :requests="similarRequests"></similar-requests>
+        </map-preview>
+        <map-preview :center="destination"
+          @position-updated="updateLatLng('destination', $event)"
+          class="map-preview">
+          <route-viewer :route="disp.selectedRoute"
+            v-if="disp.selectedRoute">
+          </route-viewer>
+          <similar-requests :requests="similarRequests"></similar-requests>
+        </map-preview>
       </div>
     </form>
 
     <div class="search-results" v-show="showSearch">
       <template v-if="liveRoutes && liveRoutes.length > 0">
         <h2>Book a ride now!</h2>
-        <live-route-viewer v-for="(route, index) in liveRoutes" :route="route"
-          :index="index"  @derive="deriveFromRoute(route)">
-        </live-route-viewer>
+        <existing-route-viewer v-for="(route, index) in liveRoutes"
+          :route="route"
+          :urlFunction="disp.liveRouteUrlFunction"
+          :index="index"
+          @derive="deriveFromRoute(route)"
+          @mouseover="selectRoute(route)"
+          :origin="origin"
+          :destination="destination">
+        </existing-route-viewer>
       </template>
 
       <h2>Bid for these Routes!</h2>
@@ -56,9 +77,16 @@
         </button>
       </template>
       <template v-else>
-        <crowdstart-route-viewer v-for="(route, index) in lelongRoutes" :route="route"
-          :index="index" @derive="deriveFromRoute(route)">
-        </crowdstart-route-viewer>
+        <existing-route-viewer v-for="(route, index) in lelongRoutes"
+          :route="route"
+          :urlFunction="disp.crowdstartRouteUrlFunction"
+          :index="index"
+          :origin="origin"
+          :destination="destination"
+          @derive="deriveFromRoute(route)"
+          @mouseover="selectRoute(route)">
+          >
+        </existing-route-viewer>
       </template>
 
       <template v-if="crowdstarting.derived">
@@ -135,13 +163,24 @@
     </div>
   </div>
 </template>
-
+<style lang="scss">
+.map-preview-panes {
+  display: flex;
+  flex-direction: row;
+  .map-preview {
+    flex: 1 0 auto;
+    height: 400px;
+  }
+}
+</style>
 <script>
-import LiveRouteViewer from './components/live-route-viewer.vue';
-import CrowdstartRouteViewer from './components/crowdstart-route-viewer.vue';
 import ProposedRouteViewer from './components/proposed-route-viewer.vue';
+import ExistingRouteViewer from './components/existing-route-viewer.vue';
 import CrowdstartFromRoute from './components/crowdstart-from-route.vue';
 import MapPreview from './components/map-preview.vue';
+import RouteViewer from './components/route-viewer.vue';
+import SimilarRequests from './components/similar-requests.vue';
+
 import querystring from 'querystring';
 import geocode from './utils/geocoder';
 import scrollTo from './utils/scrollTo';
@@ -149,11 +188,12 @@ import scrollTo from './utils/scrollTo';
 export default {
   name: 'app',
   components: {
-    LiveRouteViewer,
-    CrowdstartRouteViewer,
+    ExistingRouteViewer,
     MapPreview,
     ProposedRouteViewer,
-    CrowdstartFromRoute
+    CrowdstartFromRoute,
+    RouteViewer,
+    SimilarRequests
   },
   data() {
     return {
@@ -174,7 +214,10 @@ export default {
           east: 104.08,
           south: 1.1954,
           west: 103.5814
-        }
+        },
+        selectedRoute: null,
+        liveRouteUrlFunction: route => `https://app.beeline.sg/#/tabs/booking/${route.id}/stops`,
+        crowdstartRouteUrlFunction: route => `https://app.beeline.sg/#/tabs/crowdstart/${route.id}/detail`
       },
 
       searchSettings: {
@@ -194,13 +237,23 @@ export default {
       // lelongRoutes: null,
       liveRoutes: null,
 
-      maxDistance: 300,
+      similarRequests: [],
+
+      maxDistance: 2000,
     }
   },
   created() {
     this.$http.get('https://api.beeline.sg/custom/lelong/status')
     .then(r => r.json())
-    .then(rs => this.allLelongRoutes = rs);
+    .then(rs => {
+      for (let route of rs) {
+        for (let trip of route.trips) {
+          trip.tripStops = _.sortBy(trip.tripStops, 'time')
+        }
+      }
+      rs.trips = _.sortBy(rs.trips, 'date')
+      this.allLelongRoutes = rs
+    });
   },
   computed: {
     showSearch() {
@@ -235,6 +288,7 @@ export default {
       if (this.origin && this.destination) {
         this.updateProposedRoutes();
         this.updateLiveRoutes();
+        this.updateSimilarRequests();
       }
     },
     updateProposedRoutes() {
@@ -265,11 +319,17 @@ export default {
           startLng: this.origin.lng,
           endLat: this.destination.lat,
           endLng: this.destination.lng,
-          maxDistance: 500,
+          maxDistance: this.maxDistance,
           tags: JSON.stringify(['public']),
         }))
         .then(r => r.json())
         .then(rs => {
+          for (let route of rs) {
+            for (let trip of route.trips) {
+              trip.tripStops = _.sortBy(trip.tripStops, 'time')
+            }
+          }
+          rs.trips = _.sortBy(rs.trips, 'date')
           this.liveRoutes = rs;
         });
       }
@@ -283,11 +343,28 @@ export default {
         this.$set(this.search, which, r[0].formatted_address)
       })
     },
+    updateSimilarRequests() {
+      if (this.origin && this.destination) {
+        this.$http.get('https://api.beeline.sg/suggestions/web/similar?' + querystring.stringify({
+          startLat: this.origin.lat,
+          startLng: this.origin.lng,
+          endLat: this.destination.lat,
+          endLng: this.destination.lng,
+        }))
+        .then(r => r.json())
+        .then(rs => this.similarRequests = rs);
+      } else {
+        this.similarRequests = []
+      }
+    },
     deriveFromRoute(route) {
       this.crowdstarting.derived = route;
       this.$nextTick(() => {
         scrollTo(this.$refs.routeEditor.$el)
       })
+    },
+    selectRoute(route) {
+      this.disp.selectedRoute = route;
     },
     latLngFromPlace(place) {
       if (place.geometry) {

@@ -6,6 +6,8 @@
       </a>
     </p>
 
+    <button class="btn btn-default" @click="view">Preview</button>
+
     Arriving at {{arrivalTime}}
     <button class="btn btn-default" @click="derive">Propose a different time</button>
   </div>
@@ -33,7 +35,10 @@ export default {
   methods: {
     derive() {
       this.$emit('derive', this.route)
-    }
+    },
+    view() {
+      this.$emit('view', this.route)
+    },
   }
 }
 </script>
