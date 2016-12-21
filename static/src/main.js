@@ -9,7 +9,7 @@ Vue.use(VueResource);
 Vue.use(VueGoogleMaps, {
   load: {
     client: 'gme-infocommunications',
-    libraries: 'places',
+    libraries: 'places,geometry',
   }
 });
 
