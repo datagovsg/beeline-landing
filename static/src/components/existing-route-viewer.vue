@@ -24,7 +24,7 @@
           :center="origin"
           class="map-preview"
           >
-          <route-viewer :route="route">
+          <route-viewer :route="route" :status-bus="$refs.mapPreview1">
           </route-viewer>
         </map-preview>
         <map-preview
@@ -32,7 +32,7 @@
           :center="destination"
           class="map-preview"
           >
-          <route-viewer :route="route">
+          <route-viewer :route="route" :status-bus="$refs.mapPreview2">
           </route-viewer>
         </map-preview>
       </div>

@@ -12,7 +12,13 @@ export default Vue.extend({
         clickableIcons: false,
         streetViewControl: false,
         panControlOptions: false,
-      }
+      },
+      Singapore: {
+        north: 1.516329,
+        east: 104.08,
+        south: 1.1954,
+        west: 103.5814
+      },
     }
   },
   created() {

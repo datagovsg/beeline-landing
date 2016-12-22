@@ -4,6 +4,7 @@
       :position="{lat: request.board.coordinates[1], lng: request.board.coordinates[0]}"
       :icon="mapSettings.manWavingArmDarkIcon"
       @mouseover="hoveredRequest = request, hoverAt='board'"
+      @mouseout="hoveredRequest = null"
     >
     </gmap-marker>
 
@@ -11,9 +12,10 @@
       :position="{lat: request.alight.coordinates[1], lng: request.alight.coordinates[0]}"
       :icon="mapSettings.manWavingArmDarkIcon"
       @mouseover="hoveredRequest = request, hoverAt='alight'"
+      @mouseout="hoveredRequest = null"
       >
     </gmap-marker>
-    <gmap-info-window
+    <!-- <gmap-info-window
       v-if="hoveredRequest"
       @closeclick="hoveredRequest = false"
       :opened="!!hoveredRequest"
@@ -22,7 +24,7 @@
       >
       {{hoveredRequest.email}},
       {{-8*60*60*1000 + hoveredRequest.time | formatTime}}
-    </gmap-info-window>
+    </gmap-info-window> -->
   </div>
 </template>
 
@@ -30,9 +32,10 @@
 import Vue from 'vue';
 import _ from 'lodash';
 import mapSettings from './mapSettings.js';
+import filters from '../utils/filters';
 
 export default {
-  props: ['requests'],
+  props: ['requests', 'statusBus'],
   data() {
     return {
       hoveredRequest: null,
@@ -40,6 +43,16 @@ export default {
       mapSettings
     };
   },
-  filters: require('../utils/filters').default,
+  watch: {
+    hoveredRequest(v) {
+      if (v) {
+        this.statusBus.$emit('status',
+        `${v.email} ${filters.formatTime(-8*60*60*1000 + v.time)}`)
+      } else {
+        this.statusBus.$emit('status', null);
+      }
+    }
+  },
+  filters,
 }
 </script>

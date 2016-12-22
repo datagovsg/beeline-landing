@@ -7,24 +7,26 @@
       :icon="iconFor(tripStop)"
       :position="positionFor(tripStop)"
       @mouseover="mouseover(tripStop)"
+      @mouseout="mouseout(tripStop)"
     >
     </gmap-marker>
 
-    <gmap-info-window v-if="hoveredTripStop"
+    <!-- <gmap-info-window v-if="hoveredTripStop"
       :position="{lat: hoveredTripStop.stop.coordinates.coordinates[1],
         lng: hoveredTripStop.stop.coordinates.coordinates[0]}"
       :opened="hoveredWindowOpen"
       @closeclick="hoveredWindowOpen = false">
       {{hoveredTripStop.time | formatTime}} at
       {{hoveredTripStop.stop.description}}
-    </gmap-info-window>
+    </gmap-info-window> -->
   </div>
 </template>
 
 <script>
+import filters from '../utils/filters';
 
 export default {
-  props: ['route'],
+  props: ['route', 'statusBus'],
   data() {
     return {
       hoveredTripStop: null,
@@ -59,8 +61,14 @@ export default {
       }
     },
     mouseover(tripStop) {
-      this.hoveredTripStop = tripStop;
-      this.hoveredWindowOpen = true;
+      this.statusBus.$emit('status',
+      `${filters.formatTime(tripStop.time)} at
+      ${tripStop.stop.description}`)
+      // this.hoveredTripStop = tripStop;
+      // this.hoveredWindowOpen = true;
+    },
+    mouseout(tripStop) {
+      this.statusBus.$emit('status', null)
     }
   },
   filters: require('../utils/filters').default

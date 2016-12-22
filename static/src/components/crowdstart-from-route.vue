@@ -7,6 +7,13 @@
         {{stop.stop.description}}
       </li>
     </ol>
+    <ol v-else>
+      <li v-for="stop in computedStops">
+        <b>??:??</b>
+
+        {{stop.stop.description}}
+      </li>
+    </ol>
 
     <label>
       Arrive at
