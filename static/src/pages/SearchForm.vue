@@ -29,6 +29,12 @@
               @place_changed="setDestination(latLngFromPlace($event))" />
           </label>
         </div>
+
+        <div>
+          <label>
+            Paste (index, lat,lng,lat,lng,count) here:
+            <input type="text" @change="updateFromText" />
+        </div>
       </div> <!-- c1: the input boxes -->
       <div class="c2">
         <p v-if="runningRoutes && runningRoutes.length > 0">
@@ -168,6 +174,14 @@ export default {
         this.$set(this, which + 'Text', r[0].formatted_address)
       })
     },
+    updateFromText(event) {
+      var s = event.target.value;
+
+      var parts = s.split(/,/g)
+
+      this.setOrigin({lat: parseFloat(parts[1]), lng: parseFloat(parts[2])})
+      this.setDestination({lat: parseFloat(parts[3]), lng: parseFloat(parts[4])})
+    }
   }
 }
 </script>
