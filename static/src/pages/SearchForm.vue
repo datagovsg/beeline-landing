@@ -1,9 +1,8 @@
 <template>
   <form class="search-form" ref="searchForm">
-    <h1>Search for a Ride!</h1>
-
     <div class="r1">
       <div class="c1">
+        <h1>Search for a Ride!</h1>
         <div class="form-inline">
           <label>
             Origin
@@ -36,6 +35,16 @@
             <input type="text" @change="updateFromText" />
         </div>
       </div> <!-- c1: the input boxes -->
+
+
+      <div v-if="similarRequests" class="c2">
+        There are {{similarRequests.length}} similar requests in your area.
+        <div style="width: 250px; height: 150px">
+          <requests-time-histogram :requests="similarRequests"
+            :height="150" :width="250" />
+        </div>
+      </div>
+
       <div class="c2">
         <p v-if="runningRoutes && runningRoutes.length > 0">
           Running routes found!
@@ -61,9 +70,6 @@
       </div> <!-- c2: the results area -->
     </div>
 
-    <div v-if="similarRequests">
-      There are {{similarRequests.length}} similar requests in your area.
-    </div>
     <div class="map-preview-panes">
       <map-preview
         :center="origin"
@@ -110,7 +116,7 @@
   flex-direction: row;
 
   .c1, .c2 {
-    flex: 1 1 50%;
+    flex: 1 1 33%;
   }
 }
 </style>
@@ -123,6 +129,7 @@ import SimilarRequests from '../components/similar-requests.vue';
 import RouteViewer from '../components/route-viewer.vue';
 import MapPreview from '../components/map-preview.vue';
 import LoadingSpinner from '../components/loading-spinner.vue';
+import RequestsTimeHistogram from '../components/requests-time-histogram.vue';
 import geocode from '../utils/geocoder';
 
 export default {
@@ -132,6 +139,7 @@ export default {
     MapPreview,
     RouteViewer,
     SimilarRequests,
+    RequestsTimeHistogram,
     LoadingSpinner
   },
   data() {

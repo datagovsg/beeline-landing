@@ -103,6 +103,10 @@ server.route({
         }))
 
         sock.on('message', m => resolve(JSON.parse(m)))
+        setTimeout(() => {
+          sock.unref();
+          reject(new Error("Timed out"));
+        }, 2 * 60000);
       })
       reply(result);
     } catch (e) {

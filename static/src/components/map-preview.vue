@@ -58,7 +58,8 @@ export default {
       })
     },
     resize() {
-      this.$refs.map.resizePreserveCenter()
+      if (this.$refs.map)
+        this.$refs.map.resizePreserveCenter()
     }
   }
 }

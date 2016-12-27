@@ -8,6 +8,11 @@
         </li>
       </ol>
       <b>{{numRequests}} people will be served by this route.</b>
+      <div>
+        <b>Preferred timings of other users:</b>
+        <requests-time-histogram :requests="actualTimes"
+          :height="150" :width="250" />
+      </div>
       <button @click="startRoute(route)" class="btn btn-default">
         Crowdstart this route!
       </button>
@@ -44,15 +49,22 @@
 import Vue from 'vue';
 import _ from 'lodash';
 import mapBus from '../utils/mapBus';
+import RequestsTimeHistogram from '../components/requests-time-histogram.vue';
 
 export default {
   props: ['route'],
+  components: {
+    RequestsTimeHistogram,
+  },
   computed: {
     polylinePath() {
       return this.route.stops.map(s => _.pick(s, ['lat', 'lng']))
     },
     numRequests() {
       return _.sum(this.route.requests.map(r => r.weight))
+    },
+    actualTimes() {
+      return this.route.requests.map(r => ({time: r.time}))
     }
   },
   created() {

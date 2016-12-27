@@ -2,6 +2,7 @@ import Vue from 'vue'
 import VueX from 'vuex'
 import VueRouter from 'vue-router'
 import VueResource from 'vue-resource';
+import VueCharts from 'vue-chartjs';
 import App from './App.vue'
 import * as VueGoogleMaps from 'vue2-google-maps'
 
