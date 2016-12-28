@@ -33,8 +33,8 @@ export function createStore() {
       maxDistance: 1000,
       autogenerateSettings: {
         maxDetourMinutes: 2,
-        startClusterRadius: 4000,
-        endClusterRadius: 4000,
+        startClusterRadius: 3000,
+        endClusterRadius: 3000,
         startWalkingDistance: 300,
         endWalkingDistance: 300,
         dataSource: 'suggestions'

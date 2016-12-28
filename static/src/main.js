@@ -22,7 +22,7 @@ Vue.use(VueRouter);
 Vue.use(VueX);
 Vue.use(VueGoogleMaps, {
   load: {
-    client: 'gme-infocommunications',
+    key: 'AIzaSyCrUks5eZWa7Me8ABr_3Som3rYBKXDmS6U',
     libraries: 'places,geometry',
   }
 });
