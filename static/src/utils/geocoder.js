@@ -22,7 +22,7 @@ export default function geocode(latlng) {
 }
 
 export function geocodeOM(latlng) {
-  return Vue.resource(`http://www.onemap.sg/API/services.svc/revgeocode?token=4M0Dqj90WIXft/TJZ4nklA2NVJtrtO3OzDd7VExVYVFKu3b6Y5hj5jHazJqUMc/EFlG7wV/W/ivw0KKmcj8p5pY2ASN0QxluqV9DoJ/wWlpfOah/IJhFL3UdI5a3ZR9qZ6GDgf+3Bd8=|mv73ZvjFcSo=&location=${latlng.lng},${latlng.lat}`)
+  return Vue.resource(`https://api.beeline.sg/onemap/revgeocode?location=${latlng.lng},${latlng.lat}`)
   .get()
   .then(r => r.json())
   .then(r => {
@@ -31,7 +31,9 @@ export function geocodeOM(latlng) {
     } else {
       return [{
         formatted_address:
-          r.GeocodeInfo[0].BUILDINGNAME + r.GeocodeInfo[0].ROAD
+          [r.GeocodeInfo[0].BUILDINGNAME, r.GeocodeInfo[0].ROAD]
+            .filter(x => x)
+            .join(', ')
       }]
     }
   })

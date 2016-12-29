@@ -21,15 +21,7 @@
 
       <label>
         Arrive at
-        <select v-model="arrivalTime">
-          <option value=""></option>
-          <option value="07:45">07:45</option>
-          <option value="08:00">08:00</option>
-          <option value="08:15">08:15</option>
-          <option value="08:30">08:30</option>
-          <option value="08:45">08:45</option>
-          <option value="09:00">09:00</option>
-        </select>
+        <time-selector v-model="arrivalTime" />
       </label>
     </template>
   </div>
@@ -39,6 +31,7 @@
 import vue from 'vue';
 import moment from 'moment';
 import _ from 'lodash';
+import TimeSelector from './time-selector.vue';
 
 export default {
   props: ['route'],
@@ -46,6 +39,9 @@ export default {
     return {
       arrivalTime: '',
     }
+  },
+  components: {
+    TimeSelector
   },
   computed: {
     crowdstartUrl() {

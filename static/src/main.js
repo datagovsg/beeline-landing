@@ -11,6 +11,7 @@ import CrowdstartedResults from './pages/CrowdstartedResults.vue';
 import RunningResults from './pages/RunningResults.vue';
 import NewCrowdstart from './pages/NewCrowdstart.vue';
 import SearchForm from './pages/SearchForm.vue';
+import Suggestions from './pages/Suggestions.vue';
 import BulkForm from './pages/BulkForm.vue';
 import mapBus from './utils/mapBus';
 import {createStore} from './store';
@@ -34,6 +35,9 @@ const router = new VueRouter({
     },
     {
       path: '/search', component: SearchForm
+    },
+    {
+      path: '/suggestions', component: Suggestions
     },
     {
       path: '/', redirect: '/search'
