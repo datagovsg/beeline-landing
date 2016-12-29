@@ -46,7 +46,7 @@ export function createStore() {
       idToken: null,
       profile: null,
 
-      suggestions: [],
+      suggestions: null,
 
       now: Date.now(),
     },
