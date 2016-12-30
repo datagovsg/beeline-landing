@@ -12,6 +12,7 @@ export default Vue.extend({
         clickableIcons: false,
         streetViewControl: false,
         panControlOptions: false,
+        gestureHandling: 'greedy',
       },
       Singapore: {
         north: 1.516329,
