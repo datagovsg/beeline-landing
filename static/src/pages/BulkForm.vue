@@ -17,25 +17,6 @@
 </template>
 
 <style lang="scss">
-.map-preview-panes {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-
-  .map-preview {
-    flex: 1 0 300px;
-    height: 400px;
-    margin: 1em;
-  }
-}
-.r1 {
-  display: flex;
-  flex-direction: row;
-
-  .c1, .c2 {
-    flex: 1 1 50%;
-  }
-}
 </style>
 
 <script>

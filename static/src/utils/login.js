@@ -20,29 +20,18 @@ export var auth0Lock = new Auth0Lock(
   }
 );
 
-export default new Vue({
-  data: {
-    lock: auth0Lock,
-  },
-  methods: {
-    logIn() {
-      return new Promise((resolve, reject) =>
-        this.lock.show({
-          responseType: 'token',
-        }, (error, profile, idToken) => {
-          if (error) {
-            alert("Your email could not be verified");
-            reject(error);
-            return;
-          }
+export function logIn() {
+  return new Promise((resolve, reject) =>
+    auth0Lock.show({
+      responseType: 'token',
+    }, (error, profile, idToken) => {
+      if (error)
+        reject(error)
+      else
+        resolve({profile, idToken});
+    })
+  );
+}
 
-          this.$store.commit('setProfile', {profile, idToken});
-          resolve({profile, idToken})
-        })
-      );
-    },
-    logOut() {
-      this.$store.commit('setProfile', {profile: null, idToken: null});
-    },
-  }
-})
+export function logOut() {
+}

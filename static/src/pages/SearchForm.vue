@@ -1,7 +1,7 @@
 <template>
   <form class="search-form" ref="searchForm">
     <div class="r1">
-      <div class="c1">
+      <div class="c1" ref="searchStart">
         <h1>Search for a Ride!</h1>
         <div class="form-inline">
           <label>
@@ -14,6 +14,11 @@
               :bounds="mapSettings.Singapore"
               @place_changed="setOrigin(latLngFromPlace($event))" />
           </label>
+          <button @click="pickFromMap('1')"
+              class="small-screens-only btn btn-primary"
+              type="button">
+            Pick from Map
+          </buttton>
         </div>
 
         <div class="form-inline">
@@ -27,6 +32,11 @@
               :bounds="mapSettings.Singapore"
               @place_changed="setDestination(latLngFromPlace($event))" />
           </label>
+          <button @click="pickFromMap('2')"
+              class="small-screens-only btn btn-primary"
+              type="button">
+            Pick from Map
+          </buttton>
         </div>
 
       </div> <!-- c1: the input boxes -->
@@ -107,12 +117,21 @@
       </div> <!-- c2: the results area -->
     </div>
 
-    <div class="map-preview-panes">
+    <div class="map-preview-panes" :class="{currentMapSelection: currentMapSelection}">
+      <div class="small-screens-only return-bar"
+          ref="mapSelect1">
+        <button @click="hideMap('searchStart')">
+          <i class="glyphicon glyphicon-chevron-left"></i>
+          Back
+        </button>
+        Click anywhere on the map to select a position
+      </div>
       <map-preview
         :center="origin"
         @position-updated="updateLatLng('origin', $event)"
         ref="mapPreview1"
-        class="map-preview">
+        class="map-preview"
+        :class="{currentMapSelection: currentMapSelection == '1'}">
         <route-viewer :route="selectedRoute"
           v-if="selectedRoute">
         </route-viewer>
@@ -121,10 +140,12 @@
           :status-bus="$refs.mapPreview1"
         ></similar-requests>
       </map-preview>
+
       <map-preview :center="destination"
         @position-updated="updateLatLng('destination', $event)"
         ref="mapPreview2"
-        class="map-preview">
+        class="map-preview"
+        :class="{currentMapSelection: currentMapSelection == '2'}">
         <route-viewer :route="selectedRoute"
           v-if="selectedRoute">
         </route-viewer>
@@ -136,29 +157,8 @@
   </form>
 </template>
 
-<style lang="scss">
-.map-preview-panes {
-  display: flex;
-  flex-direction: row;
-  flex-wrap: wrap;
-
-  .map-preview {
-    flex: 1 0 300px;
-    height: 400px;
-    margin: 1em;
-  }
-}
-.r1 {
-  display: flex;
-  flex-direction: row;
-
-  .c1, .c2 {
-    flex: 1 1 33%;
-  }
-}
-</style>
-
 <script>
+import Vue from 'vue';
 import mapSettings from '../components/mapSettings.js';
 import { mapGetters, mapState, mapActions, mapMutations } from 'vuex'
 import ExistingRouteViewer from '../components/existing-route-viewer.vue';
@@ -169,6 +169,7 @@ import LoadingSpinner from '../components/loading-spinner.vue';
 import RequestsTimeHistogram from '../components/requests-time-histogram.vue';
 import geocode from '../utils/geocoder';
 import A0Lock from '../utils/login.js';
+import scrollTo from '../utils/scrollTo.js';
 import TimeSelector from '../components/time-selector.vue';
 
 export default {
@@ -194,7 +195,8 @@ export default {
       suggestion: {
         submitted: false,
         time: '',
-      }
+      },
+      currentMapSelection: '',
     }
   },
   watch: {
@@ -256,7 +258,7 @@ export default {
         if (isValid) {
           return;
         } else {
-          return A0Lock.logIn();
+          return this.$store.dispatch('logIn');
         }
       })
       .then(() => {
@@ -290,7 +292,95 @@ export default {
         alert(err.message)
         console.error(err)
       })
+    },
+    scrollToRef(mapRef) {
+      if (this.$refs[mapRef] instanceof Vue) {
+        scrollTo(this.$refs[mapRef].$el)
+      } else {
+        scrollTo(this.$refs[mapRef])
+      }
+    },
+    hideMap(mapRef) {
+      this.currentMapSelection = null;
+    },
+    pickFromMap(mapRef) {
+      this.currentMapSelection = mapRef;
+      this.$nextTick(() =>
+      this.$refs[`mapPreview${mapRef}`].resize())
     }
   }
 }
 </script>
+
+<style lang="scss">
+@media only screen and (min-width: 650px) {
+  .map-preview-panes {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+
+    .map-preview {
+      flex: 1 0 300px;
+      height: 400px;
+      margin: 1em;
+    }
+  }
+}
+/* Small screens */
+@media only screen and (max-width: 650px) {
+  .map-preview-panes {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: 0;
+    display: flex;
+    flex-direction: column;
+
+    .return-bar {
+      flex: 0 0 auto;
+      font-size: 150%;
+      background-color: #69F;
+      color: white;
+      padding: 0.5em;
+
+      button {
+        border: none;
+        background: transparent;
+
+        &:after {
+          content: " | "
+        }
+      }
+    }
+
+    .map-preview {
+      &.currentMapSelection {
+        flex: 1 0 300px;
+      }
+      &:not(.currentMapSelection) {
+        display: none;
+      }
+    }
+
+    &:not(.currentMapSelection) {
+      display: none;
+    }
+  }
+}
+.r1 {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+
+  .c1, .c2 {
+    flex: 1 0 300px;
+  }
+}
+
+@media only screen and (min-width: 650px) {
+  .small-screens-only, .small-screens-only.btn {
+    display: none;
+  }
+}
+</style>

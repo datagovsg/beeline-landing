@@ -4,6 +4,7 @@ import querystring from 'querystring';
 import {latlngDistance} from './utils/latlngDistance';
 import _ from 'lodash';
 import jwtDecode from 'jwt-decode';
+import {logIn, logOut} from './utils/login'
 
 export function createStore() {
   var allLelongRoutes = Vue.resource('https://api.beeline.sg/custom/lelong/status')
@@ -251,7 +252,19 @@ export function createStore() {
         } else {
           context.commit('setSuggestions', null);
         }
-      }
+      },
+      logIn(context) {
+        return logIn()
+        .then((result) => {
+          context.commit('setProfile', result);
+        })
+        .catch(error => {
+          alert("Your email could not be verified");
+        });
+      },
+      logOut(context) {
+        context.commit('setProfile', {profile: null, idToken: null});
+      },
     }
   })
 

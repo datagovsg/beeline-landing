@@ -53,11 +53,11 @@ import CrowdstartFromRoute from './components/crowdstart-from-route.vue';
 import MapPreview from './components/map-preview.vue';
 import RouteViewer from './components/route-viewer.vue';
 import SimilarRequests from './components/similar-requests.vue';
-import {mapState} from 'vuex';
+import {mapState, mapActions} from 'vuex';
+import {auth0Lock} from './utils/login';
 
 import querystring from 'querystring';
 import scrollTo from './utils/scrollTo';
-import A0Lock from './utils/login.js';
 
 export default {
   name: 'app',
@@ -74,7 +74,7 @@ export default {
     'loadingRequests', 'token', 'profile', 'suggestions'])
   },
   created() {
-    this.$lock = A0Lock.lock;
+    this.$lock = auth0Lock;
     this.$lock.on('authenticated', (authResult) => {
       this.$lock.getProfile(authResult.idToken, (error, profile) => {
         if (error) {
@@ -89,12 +89,7 @@ export default {
     this.$store.dispatch('checkIdToken')
   },
   methods: {
-    logIn() {
-      A0Lock.logIn()
-    },
-    logOut() {
-      A0Lock.logOut()
-    },
+    ...mapActions(['logIn', 'logOut'])
   }
 }
 
