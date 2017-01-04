@@ -63,8 +63,20 @@ export default {
           .subtract(timeDifference, 'milliseconds').valueOf();
       })
 
-      return _.zip(currentStops, newTimes).map(([st, tm]) => {
-        return _.defaults({time: tm}, st)
+      return _.zip(currentStops, newTimes).map(([st, tm]) => ({
+        ...st,
+        time: tm
+      }))
+    }
+  },
+  watch: {
+    computedStops(v) {
+      this.$emit('proposed-route-changed', {
+        ...this.route,
+        trips: [{
+          ...this.route.trips[0],
+          tripStops: v
+        }]
       })
     }
   },

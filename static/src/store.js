@@ -5,6 +5,7 @@ import {latlngDistance} from './utils/latlngDistance';
 import _ from 'lodash';
 import jwtDecode from 'jwt-decode';
 import {logIn, logOut} from './utils/login'
+import * as adminLogin from './utils/adminLogin'
 
 export function createStore() {
   var allLelongRoutes = Vue.resource('https://api.beeline.sg/custom/lelong/status')
@@ -46,6 +47,8 @@ export function createStore() {
 
       idToken: null,
       profile: null,
+      adminIdToken: null,
+      adminProfile: null,
 
       suggestions: null,
 
@@ -95,6 +98,16 @@ export function createStore() {
 
         state.profile = profile;
         state.idToken = idToken;
+      },
+      setAdminProfile(state, {profile, idToken}) {
+        // Persist to local storage
+        try {
+          window.localStorage['adminProfile'] = JSON.stringify(profile)
+          window.localStorage['adminIdToken'] = idToken;
+        } catch (err) {}
+
+        state.adminProfile = profile;
+        state.adminIdToken = idToken;
       },
       updateTimestamp(state) {
         state.now = Date.now();
@@ -265,6 +278,19 @@ export function createStore() {
       logOut(context) {
         context.commit('setProfile', {profile: null, idToken: null});
       },
+
+      adminLogIn(context) {
+        return adminLogin.logIn()
+        .then((result) => {
+          context.commit('setAdminProfile', result);
+        })
+        .catch(error => {
+          alert("Your email could not be verified");
+        });
+      },
+      adminLogOut(context) {
+        context.commit('setAdminProfile', {profile: null, idToken: null});
+      },
     }
   })
 
@@ -286,5 +312,10 @@ export function createStore() {
       idToken: window.localStorage['idToken'] || null
     });
 
+  store.commit('setAdminProfile',
+    {
+      profile: JSON.parse(window.localStorage['adminProfile'] || 'null'),
+      idToken: window.localStorage['adminIdToken'] || null
+    });
   return store;
 }
