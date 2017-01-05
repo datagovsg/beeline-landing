@@ -1,5 +1,5 @@
 <template>
-  <form class="search-form" ref="searchForm">
+  <form class="search-form" ref="searchForm" @submit.prevent>
     <div class="r1">
       <div class="c1" ref="searchStart">
         <h1>Search for a Ride!</h1>
