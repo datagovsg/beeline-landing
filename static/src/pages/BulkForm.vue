@@ -2,7 +2,7 @@
   <form class="bulk-form" ref="bulkForm">
 
     <div class="routes-list">
-      <table class="routes-list-table">
+      <table class="routes-list-table table table-striped">
         <tr v-for="cluster in clusters">
           <td>{{cluster.index}}</td>
           <td>{{cluster.geocodedStart || `${cluster.start.lat}, ${cluster.start.lng}`}}</td>
