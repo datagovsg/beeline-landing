@@ -281,10 +281,6 @@ export default {
   }
   .new-crowdstart-map {
     flex: 2 0 auto;
-    .vue-map-container {
-      width: 100%;
-      height: 100%;
-    }
   }
 }
 </style>
