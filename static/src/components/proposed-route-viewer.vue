@@ -19,6 +19,10 @@
     </div>
     <gmap-map class="gmap" :center="{lat: 1.38, lng: 103.8}" :zoom="12"
       ref="proposed-route-map">
+      <similar-requests
+        :requests="similarRequests"
+      ></similar-requests>
+
       <gmap-marker v-for="stop in route.stops"
         :position="{lat: stop.lat, lng: stop.lng}">
       </gmap-marker>
@@ -50,14 +54,18 @@ import Vue from 'vue';
 import _ from 'lodash';
 import mapBus from '../utils/mapBus';
 import RequestsTimeHistogram from '../components/requests-time-histogram.vue';
+import SimilarRequests from '../components/similar-requests.vue';
 import querystring from 'querystring';
+import { mapGetters, mapState, mapActions, mapMutations } from 'vuex'
 
 export default {
   props: ['route'],
   components: {
     RequestsTimeHistogram,
+    SimilarRequests,
   },
   computed: {
+    ...mapState(['similarRequests']),
     polylinePath() {
       return this.route.stops.map(s => _.pick(s, ['lat', 'lng']))
     },

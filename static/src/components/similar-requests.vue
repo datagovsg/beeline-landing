@@ -45,11 +45,13 @@ export default {
   },
   watch: {
     hoveredRequest(v) {
-      if (v) {
-        this.statusBus.$emit('status',
-        `${v.email} ${filters.formatTime(-8*60*60*1000 + v.time)}`)
-      } else {
-        this.statusBus.$emit('status', null);
+      if (this.statusBus) {
+        if (v) {
+          this.statusBus.$emit('status',
+          `${v.email} ${filters.formatTime(-8*60*60*1000 + v.time)}`)
+        } else {
+          this.statusBus.$emit('status', null);
+        }
       }
     }
   },
