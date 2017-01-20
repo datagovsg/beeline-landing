@@ -4,7 +4,7 @@
     <template v-if="!crowdstartedRoutes">
       <p>
         Please
-        <router-link to="/search">enter some search terms</router-link>.
+        <router-link to="search">enter some search terms</router-link>.
       </p>
     </template>
     <template v-else-if="crowdstartedRoutes.length == 0">
@@ -61,7 +61,7 @@ export default {
   methods: {
     deriveFromRoute(route) {
       this.$store.commit('crowdstartRoute', route)
-      this.$router.push('/new')
+      this.$router.push('new')
     }
   }
 }

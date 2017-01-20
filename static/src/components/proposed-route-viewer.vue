@@ -102,36 +102,6 @@ export default {
       this.$refs['proposed-route-map'].$mapObject.fitBounds(bounds);
     },
     startRoute(route) {
-      // Use the Google Maps Distance API to compute the travel time
-      // on the next working day
-      // FIXME: account for public holidays
-      var today = new Date();
-      today.setDate(today.getDate() + 1); // Increment by one
-      while (today.getDate() == 0 || today.getDate() == 6) { // Don't fall on a weekend
-        today.setDate(today.getDate() + 1)
-      }
-      var peakHourNextWorkingDay = Date.UTC( // Just set it at 8.30
-        today.getFullYear(),
-        today.getMonth(),
-        today.getDate(),
-        (7 - 8),
-        (30),
-        0
-      )
-
-      var directionsAPIParams = {
-        origin: _.pick(route.stops[0], ['lat', 'lng']),
-        destination: _.pick(route.stops[route.stops.length - 1], ['lat', 'lng']),
-        waypoints: route.stops.slice(1, route.stops.length - 1)
-          .map(s => ({location: _.pick(s, ['lat', 'lng'])})),
-        travelMode: google.maps.TravelMode.DRIVING,
-        drivingOptions: {
-          departureTime: new Date(peakHourNextWorkingDay),
-        }
-      };
-
-      var directionsService = new google.maps.DirectionsService();
-
       var simulatedRoute = {
         from: route.stops[0].description,
         to: route.stops[route.stops.length - 1].description,
@@ -144,36 +114,16 @@ export default {
                 coordinates: [s.lng, s.lat],
               }
             },
-            // time: 5 * 60 * 1000 * i // will be populated from the Directions API
+            time: 5 * 60 * 1000 * i // will be populated from the Directions API
           }))
         }]
       };
 
-      (new Promise((resolve, reject) =>
-        directionsService.route(directionsAPIParams, (result, status) => {
-          if (status === 'OK')
-            resolve(result)
-          else
-            reject(status);
-        })
-      ))
-        .then(result => // Map the result to a list of durations
-          result.routes[0].legs.map(leg => leg.duration.value * 1000)
-        )
-        .then(durations => {
-          // Update the timings on the simulated route
-          var sum = 0;
-
-          simulatedRoute.trips[0].tripStops[0].time = 0;
-          durations.forEach((d, i) => {
-            sum += d;
-            simulatedRoute.trips[0].tripStops[i + 1].time = sum;
-          })
-
-          // Let the user deal with it.
-          this.$store.commit('crowdstartRoute', simulatedRoute);
-          this.$router.push('/new')
-        })
+      this.$store.commit('crowdstartRoute', simulatedRoute);
+      this.$store.dispatch('recomputeTimings')
+      .then(() => {
+        this.$router.push('new')
+      })
     }
   }
 }

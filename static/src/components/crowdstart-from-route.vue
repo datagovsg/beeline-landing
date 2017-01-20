@@ -1,49 +1,122 @@
 <template>
   <div>
     <template v-if="!route || !route.trips || !route.trips[0]">
-      Please <router-link to="/search">search</router-link> for a route first.
+      Please <router-link to="search">search</router-link> for a route first.
     </template>
     <template v-else>
-      <ol v-if="arrivalTime">
-        <li v-for="stop in computedStops">
-          <b>{{stop.time | formatTime}}</b>
+      <div class="r">
+        <div class="stops-list">
+          <ol v-if="arrivalTime">
+            <li v-for="stop in computedStops" :key="stop.stop.description">
+              <button class="btn btn-xs" @click="moveUp(stop)">Up</button>
+              <button class="btn btn-xs" @click="moveDown(stop)">Down</button>
+              <b>{{stop.time | formatTime}}</b>
 
-          {{stop.stop.description}}
-        </li>
-      </ol>
-      <ol v-else>
-        <li v-for="stop in computedStops">
-          <b>??:??</b>
+              {{stop.stop.description}}
+            </li>
+          </ol>
+          <ol v-else>
+            <li v-for="stop in computedStops" :key="stop.stop.description">
+              <button class="btn btn-xs" @click="moveUp(stop)">Up</button>
+              <button class="btn btn-xs" @click="moveDown(stop)">Down</button>
+              <b>??:??</b>
 
-          {{stop.stop.description}}
-        </li>
-      </ol>
+              {{stop.stop.description}}
+            </li>
+          </ol>
+          <button class="btn btn-default" @click="recomputeTimings">Recompute timings!</button>
 
-      <label>
-        Arrive at
-        <time-selector v-model="arrivalTime" />
-      </label>
+          <label>
+            Arrive at
+            <time-selector v-model="arrivalTime" />
+          </label>
+        </div>
+        <div class="new-crowdstart-map">
+          <gmap-map :center="{lat:1.38, lng:103.8}" :zoom="12">
+            <similar-requests
+              :requests="similarRequests"
+            ></similar-requests>
+
+            <!-- current stops -->
+            <gmap-marker v-for="(stop, stopIndex) in route.trips[0].tripStops"
+              :icon="filters.stopIcon(stopIndex)"
+              :position="{lat: stop.stop.coordinates.coordinates[1], lng: stop.stop.coordinates.coordinates[0]}"
+              @click="selectedCurrentStop = stop">
+            </gmap-marker>
+            <gmap-info-window @closeclick="selectedCurrentStop = null"
+              :position="{lat:selectedCurrentStop.stop.coordinates.coordinates[1], lng:selectedCurrentStop.stop.coordinates.coordinates[0]}"
+              :opened="!!selectedCurrentStop"
+              v-if="selectedCurrentStop">
+              {{selectedCurrentStop.stop.description}}<br/>
+              <button @click="removeStop(selectedCurrentStop)" class="btn btn-danger">
+                Remove
+              </button>
+            </gmap-info-window>
+
+            <!-- Stops to add -->
+            <gmap-cluster :max-zoom="15">
+              <gmap-marker v-for="stop in nearbyPublicStops"
+                :key="stop.id"
+                :position="{lat:stop.coordinates.coordinates[1], lng:stop.coordinates.coordinates[0]}"
+                @click="selectedNewStop = stop">
+              </gmap-marker>
+            </gmap-cluster>
+            <gmap-info-window @closeclick="selectedNewStop = null"
+              :position="{lat:selectedNewStop.coordinates.coordinates[1], lng:selectedNewStop.coordinates.coordinates[0]}"
+              :opened="!!selectedNewStop"
+              v-if="selectedNewStop">
+              {{selectedNewStop.description}}<br/>
+              <button @click="addStop(selectedNewStop)" class="btn btn-primary">
+                Add to stops
+              </button>
+            </gmap-info-window>
+
+            <gmap-polyline :path="polylinePath">
+            </gmap-polyline>
+          </gmap-map>
+        </div>
+      </div>
     </template>
   </div>
 </template>
 
 <script>
+import assert from 'assert';
 import vue from 'vue';
 import moment from 'moment';
+import leftPad from 'left-pad';
 import _ from 'lodash';
 import TimeSelector from './time-selector.vue';
+import SimilarRequests from '../components/similar-requests.vue';
+import { mapGetters, mapState, mapActions, mapMutations } from 'vuex'
+import {latlngDistance} from '../utils/latlngDistance';
 
 export default {
   props: ['route'],
   data() {
     return {
       arrivalTime: '',
+      filters: {
+        stopIcon(stopIndex) {
+          stopIndex = parseInt(stopIndex);
+          return {
+            url: `https://admin.beeline.sg/img/stopBoard${leftPad(stopIndex + 1, 3, '0')}.png`,
+            scaledSize: window.google && new google.maps.Size(48, 48),
+	          anchor: window.google && new google.maps.Point(24, 24)
+          }
+        }
+      },
+      stops: [],
+      selectedNewStop: null,
+      selectedCurrentStop: null,
     }
   },
   components: {
-    TimeSelector
+    TimeSelector,
+    SimilarRequests,
   },
   computed: {
+    ...mapState(['similarRequests', 'origin', 'destination']),
     crowdstartUrl() {
       return `https://app.beeline.sg/#/tabs/crowdstart/${this.route.id}/detail`
     },
@@ -52,21 +125,48 @@ export default {
       return moment(tripStops[tripStops.length-1].time).utcOffset(480).format('hh:mm');
     },
     computedStops() {
-      var currentStops = _.sortBy(this.route.trips[0].tripStops, 'time');
+      if (!_.get(this.route, 'trips.0')) {
+        return [];
+      }
+      var currentStops = this.route.trips[0].tripStops;
+      var maxTime = _.maxBy(currentStops.map(s => moment(s.time).utcOffset(480)), m => m.valueOf())
       var currentTimes = currentStops.map(s => moment(s.time).utcOffset(480))
       var today = moment();
       var [hours, minutes] = this.arrivalTime ? this.arrivalTime.split(':') : [0, 0];
 
       var newTimes = currentTimes.map(ct => {
-        var timeDifference = currentTimes[currentTimes.length - 1].valueOf() - ct.valueOf()
+        var timeDifference = maxTime.valueOf() - ct.valueOf()
         return today.clone().hour(hours).minute(minutes)
           .subtract(timeDifference, 'milliseconds').valueOf();
       })
 
       return _.zip(currentStops, newTimes).map(([st, tm]) => ({
         ...st,
-        time: tm
+        time: tm,
+        _original: st
       }))
+    },
+    polylinePath() {
+      return this.route.trips[0].tripStops.map(tripStop => {
+        return {
+          lat: tripStop.stop.coordinates.coordinates[1],
+          lng: tripStop.stop.coordinates.coordinates[0]
+        }
+      })
+    },
+    nearbyPublicStops() {
+      if (!this.origin || !this.destination) return [];
+
+      return this.stops.filter(s =>
+        latlngDistance(
+          [s.coordinates.coordinates[1], s.coordinates.coordinates[0]],
+          [this.origin.lat, this.origin.lng]
+        ) < 5000 ||
+        latlngDistance(
+          [s.coordinates.coordinates[1], s.coordinates.coordinates[0]],
+          [this.destination.lat, this.destination.lng]
+        ) < 5000
+      )
     }
   },
   watch: {
@@ -78,8 +178,113 @@ export default {
           tripStops: v
         }]
       })
-    }
+    },
+  },
+  created() {
+    this.$http.get('https://api.beeline.sg/stops')
+    .then(r => r.json())
+    .then(ss => {
+      this.stops = ss
+    })
+  },
+  methods: {
+    ...mapActions(['recomputeTimings']),
+    addStop(stop) {
+      var nearest = _(this.route.trips[0].tripStops)
+        .map((ts, key) => [ts, key, latlngDistance(
+          [stop.coordinates.coordinates[1], stop.coordinates.coordinates[0]],
+          [ts.stop.coordinates.coordinates[1], ts.stop.coordinates.coordinates[0]]
+        )])
+        .minBy(r => r[2])
+
+      var tss = this.route.trips[0].tripStops;
+
+      this.$emit('crowdstart-route-changed', {
+        ...this.route,
+        trips: [{
+          ...this.route.trips[0],
+          tripStops: tss.slice(0, nearest[1])
+            .concat([{
+              stop,
+              time: nearest[0].time
+            }])
+            .concat(tss.slice(nearest[1]))
+        }]
+      })
+
+      this.selectedNewStop = null;
+    },
+    removeStop(stop) {
+      var stopIndex = this.route.trips[0].tripStops.indexOf(stop);
+      var tss = this.route.trips[0].tripStops;
+
+      this.$emit('crowdstart-route-changed', {
+        ...this.route,
+        trips: [{
+          ...this.route.trips[0],
+          tripStops: tss.slice(0, stopIndex)
+            .concat(tss.slice(stopIndex + 1))
+        }]
+      })
+    },
+    moveUp(stop) {
+      var stopIndex = this.route.trips[0].tripStops.findIndex(ts => ts == stop._original);
+      var tss = this.route.trips[0].tripStops;
+
+      assert(stopIndex !== -1)
+      if (stopIndex == 0) {
+        return;
+      }
+
+      this.$emit('crowdstart-route-changed', {
+        ...this.route,
+        trips: [{
+          ...this.route.trips[0],
+          tripStops: tss.slice(0, stopIndex - 1)
+            .concat(tss.slice(stopIndex, stopIndex + 1))
+            .concat(tss.slice(stopIndex - 1, stopIndex))
+            .concat(tss.slice(stopIndex + 1))
+        }]
+      })
+    },
+    moveDown(stop) {
+      var stopIndex = this.route.trips[0].tripStops.findIndex(ts => ts == stop._original);
+      var tss = this.route.trips[0].tripStops;
+
+      assert(stopIndex !== -1)
+      if (stopIndex == this.route.trips[0].tripStops.length - 1) {
+        return;
+      }
+
+      this.$emit('crowdstart-route-changed', {
+        ...this.route,
+        trips: [{
+          ...this.route.trips[0],
+          tripStops: tss.slice(0, stopIndex)
+            .concat(tss.slice(stopIndex + 1, stopIndex + 2))
+            .concat(tss.slice(stopIndex, stopIndex + 1))
+            .concat(tss.slice(stopIndex + 2))
+        }]
+      })
+    },
   },
   filters: require('../utils/filters').default
 }
 </script>
+
+<style scoped lang="scss">
+.r {
+  display: flex;
+
+  .stops-list {
+    flex: 1 0 auto;
+  }
+  .new-crowdstart-map {
+    flex: 2 0 auto;
+    .vue-map-container {
+      width: 100%;
+      height: 100%;
+    }
+  }
+}
+</style>
