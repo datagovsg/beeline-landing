@@ -1,3 +1,4 @@
+import assert from 'assert';
 import Vuex from 'vuex';
 import Vue from 'vue';
 import querystring from 'querystring';
@@ -291,6 +292,82 @@ export function createStore() {
       adminLogOut(context) {
         context.commit('setAdminProfile', {profile: null, idToken: null});
       },
+      recomputeTimings(context) {
+        assert(context.state.crowdstartRoute);
+
+        // Use the Google Maps Distance API to compute the travel time
+        // on the next working day
+        // FIXME: account for public holidays
+        var today = new Date();
+        today.setDate(today.getDate() + 1); // Increment by one
+        while (today.getDate() == 0 || today.getDate() == 6) { // Don't fall on a weekend
+          today.setDate(today.getDate() + 1)
+        }
+        var peakHourNextWorkingDay = Date.UTC( // Just set it at 8.30
+          today.getFullYear(),
+          today.getMonth(),
+          today.getDate(),
+          (7 - 8),
+          (30),
+          0
+        )
+
+        var tss = context.state.crowdstartRoute.trips[0].tripStops
+
+        const pointToLatLng = geojson => ({
+          lat: geojson.coordinates[1],
+          lng: geojson.coordinates[0],
+        })
+
+        var directionsAPIParams = {
+          origin: pointToLatLng(tss[0].stop.coordinates),
+          destination: pointToLatLng(tss[tss.length - 1].stop.coordinates),
+          waypoints: tss.slice(1, tss.length - 1)
+            .map(s => ({location: pointToLatLng(s.stop.coordinates)})),
+          travelMode: google.maps.TravelMode.DRIVING,
+          drivingOptions: {
+            departureTime: new Date(peakHourNextWorkingDay),
+          }
+        };
+
+        var directionsService = new google.maps.DirectionsService();
+
+        return (new Promise((resolve, reject) =>
+          directionsService.route(directionsAPIParams, (result, status) => {
+            if (status === 'OK')
+              resolve(result)
+            else
+              reject(status);
+          })
+        ))
+          .then(result => // Map the result to a list of durations
+            result.routes[0].legs.map(leg => leg.duration.value * 1000)
+          )
+          .then(durations => {
+            // Update the timings on the simulated route
+            var sum = 0;
+
+            // Clone the route...
+            var simulatedRoute = {
+              ...context.state.crowdstartRoute,
+              trips: [{
+                ...context.state.crowdstartRoute.trips[0],
+                tripStops: context.state.crowdstartRoute.trips[0].tripStops.map(ts => ({
+                  ...ts
+                }))
+              }]
+            }
+
+            simulatedRoute.trips[0].tripStops[0].time = 0;
+            durations.forEach((d, i) => {
+              sum += d;
+              simulatedRoute.trips[0].tripStops[i + 1].time = sum;
+            })
+
+            // Let the user deal with it.
+            context.commit('crowdstartRoute', simulatedRoute);
+          })
+      }
     }
   })
 

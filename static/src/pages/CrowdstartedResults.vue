@@ -61,7 +61,7 @@ export default {
   methods: {
     deriveFromRoute(route) {
       this.$store.commit('crowdstartRoute', route)
-      this.$router.push('/new')
+      this.$router.push('new')
     }
   }
 }

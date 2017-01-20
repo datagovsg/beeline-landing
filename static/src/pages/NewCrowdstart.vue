@@ -3,7 +3,8 @@
     <template v-if="crowdstartRoute">
       <h3>Timing not Suitable? Propose something else!</h3>
       <crowdstart-from-route :route="crowdstartRoute"
-        ref="routeEditor" @proposed-route-changed="proposedRoute = $event">
+        ref="routeEditor" @proposed-route-changed="proposedRoute = $event"
+        @crowdstart-route-changed="$store.commit('crowdstartRoute', $event)">
       </crowdstart-from-route>
 
       <button class="btn btn-primary" @click="createRoute">Submit!</button>

@@ -65,7 +65,7 @@ export default {
         lat: suggestion.alight.coordinates[1],
         lng: suggestion.alight.coordinates[0],
       });
-      this.$router.push('/search');
+      this.$router.push('search');
     },
     destroy(suggestion) {
       if (confirm("Are you sure you want to delete this suggestion?")) {

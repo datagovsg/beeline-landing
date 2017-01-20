@@ -149,7 +149,7 @@ export default {
     use(cluster) {
       this.setOrigin(cluster.start);
       this.setDestination(cluster.end);
-      this.$router.push('/search');
+      this.$router.push('search');
     }
   }
 }
