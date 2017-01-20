@@ -3,6 +3,7 @@
 
     <div class="routes-list">
       <table class="routes-list-table table table-striped">
+      <tbody>
         <tr v-for="cluster in clusters">
           <td>{{cluster.index}}</td>
           <td>{{cluster.geocodedStart || `${cluster.start.lat}, ${cluster.start.lng}`}}</td>
@@ -10,6 +11,7 @@
           <td>{{cluster.score}}</td>
           <td><button type="button" @click="use(cluster)">Use</button></td>
         </tr>
+      </tbody>
       </table>
     </div>
 
