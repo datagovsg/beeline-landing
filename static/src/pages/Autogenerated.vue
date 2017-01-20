@@ -6,7 +6,7 @@
           Walking distance at start
           <input type="number" v-model="localSettings.startWalkingDistance" step="10"
             class="form-control"
-            to="/search"/>
+            to="search"/>
         </label>
       </div>
       <div>
@@ -14,7 +14,7 @@
           Walking distance at end
           <input type="number" v-model="localSettings.endWalkingDistance" step="10"
             class="form-control"
-            to="/search"/>
+            to="search"/>
         </label>
       </div>
       <div>
@@ -22,7 +22,7 @@
           Cluster radius at start
           <input type="number" v-model="localSettings.startClusterRadius" step="10"
             class="form-control"
-            to="/search"/>
+            to="search"/>
         </label>
       </div>
       <div>
@@ -30,7 +30,7 @@
           Cluster radius at end
           <input type="number" v-model="localSettings.endClusterRadius" step="10"
             class="form-control"
-            to="/search"/>
+            to="search"/>
         </label>
       </div>
       <div>
@@ -38,7 +38,7 @@
           Detour minutes
           <input type="number" v-model="localSettings.maxDetourMinutes" step="1"
             class="form-control"
-            to="/search" />
+            to="search" />
         </label>
       </div>
       <div>

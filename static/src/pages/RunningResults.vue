@@ -16,13 +16,13 @@
     <div v-else-if="runningRoutes && runningRoutes.length === 0">
       <p>
         Sorry! No running routes found. Try
-        <router-link to="/new">crowdstarted</router-link> routes?
+        <router-link to="new">crowdstarted</router-link> routes?
       </p>
     </div>
     <div v-else>
       <p>
         Please
-        <router-link to="/search">enter some search terms</router-link>.
+        <router-link to="search">enter some search terms</router-link>.
       </p>
     </div>
   </div>
