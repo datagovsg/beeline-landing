@@ -232,7 +232,7 @@ export function createStore() {
             origin_lng: context.state.origin.lng,
             destination_lat: context.state.destination.lat,
             destination_lng: context.state.destination.lng,
-            settings: JSON.stringify(context.state.autogenerateSettings)
+            settings: JSON.stringify({})
           })).get()
           .then(r => r.json())
           .then(rs => {
