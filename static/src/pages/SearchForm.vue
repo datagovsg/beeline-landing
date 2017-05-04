@@ -18,7 +18,7 @@
               class="small-screens-only btn btn-primary"
               type="button">
             Pick from Map
-          </button>
+          </buttton>
         </div>
 
         <div class="form-inline">
@@ -36,7 +36,7 @@
               class="small-screens-only btn btn-primary"
               type="button">
             Pick from Map
-          </button>
+          </buttton>
         </div>
 
       </div> <!-- c1: the input boxes -->

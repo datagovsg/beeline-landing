@@ -20,7 +20,7 @@
           @destroy="destroy(suggestion)">
         </suggestion-viewer>
       </tbody>
-    </table>
+    </tbody>
   </div>
   <div v-else>
     You are not logged in
