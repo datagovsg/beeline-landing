@@ -8,7 +8,7 @@ export default {
   props: ['value'],
   methods: {
     updateValue(e) {
-	  this.$emit('input', parseFloat(e.target.value))
+      this.$emit('input', parseFloat(e.target.value))
     }
   }
 }
