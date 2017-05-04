@@ -20,7 +20,8 @@
         We will use your suggestion to improve our route suggestions.
         Keep yourself subscribed by email when someone else
         commits money to a route near you.
-      </button>
+        </button>
+      </div>
     </template>
     <template v-else>
       <existing-route-viewer v-for="(route, index) in crowdstartedRoutes"
