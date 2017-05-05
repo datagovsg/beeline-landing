@@ -1,5 +1,6 @@
 <template>
 <select :value="value" @input="input">
+  <option value=""></option>
   <option value="07:45">07:45</option>
   <option value="08:00">08:00</option>
   <option value="08:15">08:15</option>

@@ -10,7 +10,9 @@
             Arrive at
             <place-selector v-model="arrivalPlace" :stops="computedStops" />
             by
-            <time-selector v-model="arrivalTime" />
+            <hour-selector v-model="arrivalTimeHour" />
+            :
+            <minute-selector v-model="arrivalTimeMinute" />
           </label>
 
           <ol>
@@ -78,7 +80,8 @@ import vue from 'vue';
 import moment from 'moment';
 import leftPad from 'left-pad';
 import _ from 'lodash';
-import TimeSelector from './time-selector.vue';
+import HourSelector from './hour-selector.vue';
+import MinuteSelector from './minute-selector.vue';
 import PlaceSelector from './place-selector.vue';
 import SimilarRequests from '../components/similar-requests.vue';
 import { mapGetters, mapState, mapActions, mapMutations } from 'vuex'
@@ -88,7 +91,8 @@ export default {
   props: ['route'],
   data() {
     return {
-      arrivalTime: '08:00',
+      arrivalTimeHour: '08',
+      arrivalTimeMinute: '00',
       arrivalPlace: '',
       filters: {
         stopIcon(stopIndex) {
@@ -106,7 +110,8 @@ export default {
     }
   },
   components: {
-    TimeSelector,
+    HourSelector,
+    MinuteSelector,
     PlaceSelector,
     SimilarRequests,
   },
@@ -135,11 +140,12 @@ export default {
       var arrivalStopTime = moment(arrivalStop.time).utcOffset(480).valueOf()
       var currentTimes = currentStops.map(s => moment(s.time).utcOffset(480))
       var today = moment()
-      var [hours, minutes] = this.arrivalTime ? this.arrivalTime.split(':') : [0, 0]
+      assert(this.arrivalTimeHour)
+      assert(this.arrivalTimeMinute)
 
       var newTimes = currentTimes.map(ct => {
         var timeDifference = arrivalStopTime - ct.valueOf()
-        return today.clone().hour(hours).minute(minutes)
+        return today.clone().hour(this.arrivalTimeHour).minute(this.arrivalTimeMinute)
           .subtract(timeDifference, 'milliseconds').valueOf();
       })
 
