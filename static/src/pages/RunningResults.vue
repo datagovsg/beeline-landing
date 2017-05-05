@@ -16,7 +16,7 @@
     <div v-else-if="runningRoutes && runningRoutes.length === 0">
       <p>
         Sorry! No running routes found. Try
-        <router-link to="new">crowdstarted</router-link> routes?
+        <router-link to="crowdstarted">crowdstarted</router-link> routes?
       </p>
     </div>
     <div v-else>
