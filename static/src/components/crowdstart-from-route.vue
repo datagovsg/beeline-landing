@@ -6,7 +6,20 @@
     <template v-else>
       <div class="r">
         <div class="stops-list">
-          <ol v-if="arrivalTime">
+          <label>
+            Arrive at
+            <select v-model="arrivalPlace" @input="updateStop">
+              <option v-for="stop in computedStops" :value="stop.stop.description">
+                {{stop.stop.description}}
+              </option>
+            </select>
+            by
+            <hour-selector v-model="arrivalTimeHour" />
+            :
+            <minute-selector v-model="arrivalTimeMinute" />
+          </label>
+
+          <ol>
             <li v-for="stop in computedStops" :key="stop.stop.description">
               <button class="btn btn-xs" @click="moveUp(stop)">Up</button>
               <button class="btn btn-xs" @click="moveDown(stop)">Down</button>
@@ -15,21 +28,6 @@
               {{stop.stop.description}}
             </li>
           </ol>
-          <ol v-else>
-            <li v-for="stop in computedStops" :key="stop.stop.description">
-              <button class="btn btn-xs" @click="moveUp(stop)">Up</button>
-              <button class="btn btn-xs" @click="moveDown(stop)">Down</button>
-              <b>??:??</b>
-
-              {{stop.stop.description}}
-            </li>
-          </ol>
-          <button class="btn btn-default" @click="recomputeTimings">Recompute timings!</button>
-
-          <label>
-            Arrive at
-            <time-selector v-model="arrivalTime" />
-          </label>
         </div>
         <div class="new-crowdstart-map">
           <gmap-map :center="{lat:1.38, lng:103.8}" :zoom="12">
@@ -86,7 +84,8 @@ import vue from 'vue';
 import moment from 'moment';
 import leftPad from 'left-pad';
 import _ from 'lodash';
-import TimeSelector from './time-selector.vue';
+import HourSelector from './hour-selector.vue';
+import MinuteSelector from './minute-selector.vue';
 import SimilarRequests from '../components/similar-requests.vue';
 import { mapGetters, mapState, mapActions, mapMutations } from 'vuex'
 import {latlngDistance} from '../utils/latlngDistance';
@@ -95,7 +94,9 @@ export default {
   props: ['route'],
   data() {
     return {
-      arrivalTime: '',
+      arrivalTimeHour: '08',
+      arrivalTimeMinute: '00',
+      arrivalPlace: '',
       filters: {
         stopIcon(stopIndex) {
           stopIndex = parseInt(stopIndex);
@@ -112,7 +113,8 @@ export default {
     }
   },
   components: {
-    TimeSelector,
+    HourSelector,
+    MinuteSelector,
     SimilarRequests,
   },
   computed: {
@@ -129,14 +131,23 @@ export default {
         return [];
       }
       var currentStops = this.route.trips[0].tripStops;
-      var maxTime = _.maxBy(currentStops.map(s => moment(s.time).utcOffset(480)), m => m.valueOf())
+
+      var arrivalStopIndex = currentStops
+        .map(cs => cs.stop.description)
+        .indexOf(this.arrivalPlace)
+      if (arrivalStopIndex == -1) {
+        arrivalStopIndex = currentStops.length - 1 // Default to follow last bus stop
+      }
+      var arrivalStop = currentStops[arrivalStopIndex]
+      var arrivalStopTime = moment(arrivalStop.time).utcOffset(480).valueOf()
       var currentTimes = currentStops.map(s => moment(s.time).utcOffset(480))
-      var today = moment();
-      var [hours, minutes] = this.arrivalTime ? this.arrivalTime.split(':') : [0, 0];
+      var today = moment()
+      assert(this.arrivalTimeHour)
+      assert(this.arrivalTimeMinute)
 
       var newTimes = currentTimes.map(ct => {
-        var timeDifference = maxTime.valueOf() - ct.valueOf()
-        return today.clone().hour(hours).minute(minutes)
+        var timeDifference = arrivalStopTime - ct.valueOf()
+        return today.clone().hour(this.arrivalTimeHour).minute(this.arrivalTimeMinute)
           .subtract(timeDifference, 'milliseconds').valueOf();
       })
 
@@ -246,6 +257,8 @@ export default {
             .concat(tss.slice(stopIndex + 1))
         }]
       })
+
+      this.$store.dispatch('recomputeTimings')
     },
     moveDown(stop) {
       var stopIndex = this.route.trips[0].tripStops.findIndex(ts => ts == stop._original);
@@ -266,7 +279,12 @@ export default {
             .concat(tss.slice(stopIndex + 2))
         }]
       })
+
+      this.$store.dispatch('recomputeTimings')
     },
+    updateStop(event) {
+      this.$emit('input', event.target.value)
+    }
   },
   filters: require('../utils/filters').default
 }
