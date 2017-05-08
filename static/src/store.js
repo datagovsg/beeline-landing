@@ -359,8 +359,10 @@ export function createStore() {
             }
 
             simulatedRoute.trips[0].tripStops[0].time = 0;
+            // We set 1 minute to let bus slow down, drop/pick passengers, and drive again.
+            var contingencyDelay = 60 * 1000;
             durations.forEach((d, i) => {
-              sum += d;
+              sum += d + contingencyDelay;
               simulatedRoute.trips[0].tripStops[i + 1].time = sum;
             })
 
