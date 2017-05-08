@@ -8,7 +8,11 @@
         <div class="stops-list">
           <label>
             Arrive at
-            <place-selector v-model="arrivalPlace" :stops="computedStops" />
+            <select v-model="arrivalPlace" @input="updateStop">
+              <option v-for="stop in computedStops" :value="stop.stop.description">
+                {{stop.stop.description}}
+              </option>
+            </select>
             by
             <hour-selector v-model="arrivalTimeHour" />
             :
@@ -82,7 +86,6 @@ import leftPad from 'left-pad';
 import _ from 'lodash';
 import HourSelector from './hour-selector.vue';
 import MinuteSelector from './minute-selector.vue';
-import PlaceSelector from './place-selector.vue';
 import SimilarRequests from '../components/similar-requests.vue';
 import { mapGetters, mapState, mapActions, mapMutations } from 'vuex'
 import {latlngDistance} from '../utils/latlngDistance';
@@ -112,7 +115,6 @@ export default {
   components: {
     HourSelector,
     MinuteSelector,
-    PlaceSelector,
     SimilarRequests,
   },
   computed: {
@@ -280,6 +282,9 @@ export default {
 
       this.$store.dispatch('recomputeTimings')
     },
+    updateStop(event) {
+      this.$emit('input', event.target.value)
+    }
   },
   filters: require('../utils/filters').default
 }
