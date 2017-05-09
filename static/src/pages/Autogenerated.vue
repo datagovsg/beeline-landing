@@ -4,7 +4,7 @@
       <div>
         <label>
           Walking distance at start
-          <input type="number" v-model="localSettings.startWalkingDistance" step="10"
+          <number-input v-model="localSettings.startWalkingDistance" step="10"
             class="form-control"
             to="search"/>
         </label>
@@ -12,7 +12,7 @@
       <div>
         <label>
           Walking distance at end
-          <input type="number" v-model="localSettings.endWalkingDistance" step="10"
+          <number-input v-model="localSettings.endWalkingDistance" step="10"
             class="form-control"
             to="search"/>
         </label>
@@ -20,7 +20,7 @@
       <div>
         <label>
           Cluster radius at start
-          <input type="number" v-model="localSettings.startClusterRadius" step="10"
+          <number-input v-model="localSettings.startClusterRadius" step="10"
             class="form-control"
             to="search"/>
         </label>
@@ -28,7 +28,7 @@
       <div>
         <label>
           Cluster radius at end
-          <input type="number" v-model="localSettings.endClusterRadius" step="10"
+          <number-input v-model="localSettings.endClusterRadius" step="10"
             class="form-control"
             to="search"/>
         </label>
@@ -36,7 +36,7 @@
       <div>
         <label>
           Detour minutes
-          <input type="number" v-model="localSettings.maxDetourMinutes" step="1"
+          <number-input v-model="localSettings.maxDetourMinutes" step="1"
             class="form-control"
             to="search" />
         </label>
@@ -87,6 +87,7 @@ import ProposedRouteViewer from '../components/proposed-route-viewer.vue';
 import SimilarRequests from '../components/similar-requests.vue';
 import RouteViewer from '../components/route-viewer.vue';
 import MapPreview from '../components/map-preview.vue';
+import NumberInput from '../components/number-input.vue';
 import geocode from '../utils/geocoder';
 import _ from 'lodash';
 
@@ -95,7 +96,8 @@ export default {
     ProposedRouteViewer,
     MapPreview,
     RouteViewer,
-    SimilarRequests
+    SimilarRequests,
+    NumberInput
   },
   data() {
     return {
