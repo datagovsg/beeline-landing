@@ -159,6 +159,41 @@ server.route({
   },
 });
 
+
+server.route({
+  method: 'GET',
+  path: '/busstops',
+  config: {
+    tags: ['api'],
+    description: `Get all bus stops from back-end.`
+  },
+  async handler(request, reply) {
+    try {
+      var result = await new Promise((resolve, reject) => {
+        var sock = zmq.socket('req')
+
+        sock.connect('tcp://127.0.0.1:5555')
+
+        sock.send(JSON.stringify({
+          type: 'getBusStops',
+          payload: {}
+        }))
+
+        sock.on('message', m => resolve(JSON.parse(m)))
+        setTimeout(() => {
+          sock.unref();
+          reject(new Error("Timed out"));
+        }, 2 * 60000);
+      })
+      reply(result);
+    } catch (e) {
+      console.log(e.stack);
+      reply(e);
+    }
+  },
+});
+
+
 server.start()
 .then(() => {
   console.log(`Server started on port ${server.info.port}`)
