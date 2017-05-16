@@ -3,8 +3,8 @@
     <td>{{index}}</td>
     <td>{{board}}</td>
     <td>{{alight}}</td>
-    <td>{{suggestion.time - 480 * 60000| formatTime}}</td>
-    <td>{{suggestion.createdAt}}</td>
+    <td>{{suggestion.time - 480 * 60000 | formatTime}}</td>
+    <td>{{suggestion.createdAt | formatDateTime}}</td>
     <td><button class="btn btn-danger" @click="destroy">Delete</button></td>
     <td><button class="btn btn-default" @click="view">View</button></td>
   </tr>
