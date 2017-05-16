@@ -54,7 +54,7 @@
             <!-- Stops to add -->
             <gmap-cluster :max-zoom="15">
               <gmap-marker v-for="stop in nearbyPublicStops"
-                :key="stop.id"
+                :key="stop.index"
                 :position="{lat:stop.coordinates.coordinates[1], lng:stop.coordinates.coordinates[0]}"
                 @click="selectedNewStop = stop">
               </gmap-marker>
@@ -69,7 +69,7 @@
               </button>
             </gmap-info-window>
 
-            <gmap-polyline :path="polylinePath">
+            <gmap-polyline v-if="polylinePath" :path="polylinePath">
             </gmap-polyline>
           </gmap-map>
         </div>
@@ -110,6 +110,7 @@ export default {
       stops: [],
       selectedNewStop: null,
       selectedCurrentStop: null,
+      polylinePath: null
     }
   },
   components: {
@@ -157,13 +158,18 @@ export default {
         _original: st
       }))
     },
-    polylinePath() {
-      return this.route.trips[0].tripStops.map(tripStop => {
-        return {
-          lat: tripStop.stop.coordinates.coordinates[1],
-          lng: tripStop.stop.coordinates.coordinates[0]
-        }
-      })
+    polylinePathPromise() {
+      var indices = this.route.trips[0].tripStops.map(tripStop => tripStop.stop.index)
+      var data = vue.resource('/paths/' + indices.join('/')).get()
+        .then(r => r.json())
+        .then(rs => {
+          if (rs.status === 'success') {
+            return _.flatten(rs.payload).map(s => _.pick(s, ['lat', 'lng']))
+          } else {
+            throw new Error(rs.payload);
+          }
+        })
+      return data
     },
     nearbyPublicStops() {
       if (!this.origin || !this.destination) return [];
@@ -190,12 +196,18 @@ export default {
         }]
       })
     },
+    polylinePathPromise: {
+      handler(promise) {
+        promise.then((path) => this.polylinePath = path)
+      },
+      immediate: true,
+    }
   },
   created() {
-    this.$http.get('https://api.beeline.sg/stops')
+    vue.resource('/bus_stops').get()
     .then(r => r.json())
     .then(ss => {
-      this.stops = ss
+      this.stops = ss.payload.busStops
     })
   },
   methods: {
@@ -217,13 +229,14 @@ export default {
           tripStops: tss.slice(0, nearest[1])
             .concat([{
               stop,
-              time: nearest[0].time
+              time: nearest[0].time,
             }])
             .concat(tss.slice(nearest[1]))
         }]
       })
 
       this.selectedNewStop = null;
+      this.$store.dispatch('recomputeTimings')
     },
     removeStop(stop) {
       var stopIndex = this.route.trips[0].tripStops.indexOf(stop);
@@ -237,6 +250,8 @@ export default {
             .concat(tss.slice(stopIndex + 1))
         }]
       })
+
+      this.$store.dispatch('recomputeTimings')
     },
     moveUp(stop) {
       var stopIndex = this.route.trips[0].tripStops.findIndex(ts => ts == stop._original);

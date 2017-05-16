@@ -162,7 +162,7 @@ server.route({
 
 server.route({
   method: 'GET',
-  path: '/busstops',
+  path: '/bus_stops',
   config: {
     tags: ['api'],
     description: `Get all bus stops from back-end.`
