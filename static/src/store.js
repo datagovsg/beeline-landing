@@ -250,7 +250,7 @@ export function createStore() {
       },
       fetchSuggestions(context) {
         if (context.state.idToken) {
-          Vue.http.get('http://localhost:8989/suggestions/web',
+          Vue.http.get('https://api.beeline.sg/suggestions/web',
           {
             headers: {
               authorization: `Bearer ${context.state.idToken}`
