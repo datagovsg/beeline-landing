@@ -151,6 +151,8 @@ export default {
           .subtract(timeDifference, 'milliseconds').valueOf();
       })
 
+      this.$store.commit('setCrowdstartRouteStartTime', newTimes[0])
+
       return _.zip(currentStops, newTimes).map(([st, tm]) => ({
         ...st,
         time: tm,
@@ -158,12 +160,14 @@ export default {
       }))
     },
     polylinePath() {
-      return this.route.trips[0].tripStops.map(tripStop => {
+      var path = this.route.trips[0].tripStops.map(tripStop => {
         return {
           lat: tripStop.stop.coordinates.coordinates[1],
           lng: tripStop.stop.coordinates.coordinates[0]
         }
       })
+      this.$store.commit('setCrowdstartRoutePolylinePath', path)
+      return path
     },
     nearbyPublicStops() {
       if (!this.origin || !this.destination) return [];
@@ -257,8 +261,6 @@ export default {
             .concat(tss.slice(stopIndex + 1))
         }]
       })
-
-      this.$store.dispatch('recomputeTimings')
     },
     moveDown(stop) {
       var stopIndex = this.route.trips[0].tripStops.findIndex(ts => ts == stop._original);
