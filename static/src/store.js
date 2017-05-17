@@ -9,7 +9,7 @@ import {logIn, logOut} from './utils/login'
 import * as adminLogin from './utils/adminLogin'
 
 export function createStore() {
-  var allLelongRoutes = Vue.resource('https://api.beeline.sg/custom/lelong/status')
+  var allLelongRoutes = Vue.resource(process.env.BEELINE_API + '/custom/lelong/status')
     .get()
     .then(r => r.json())
     .then(rs => {
@@ -159,7 +159,7 @@ export function createStore() {
       },
       fetchSimilarRequests(context) {
         if (context.state.origin && context.state.destination) {
-          Vue.resource('https://api.beeline.sg/suggestions/web/similar?' + querystring.stringify({
+          Vue.resource(process.env.BEELINE_API + '/suggestions/web/similar?' + querystring.stringify({
             startLat: context.state.origin.lat,
             startLng: context.state.origin.lng,
             endLat: context.state.destination.lat,
@@ -183,7 +183,7 @@ export function createStore() {
         if (context.state.origin && context.state.destination) {
           context.commit('incrementLoading');
 
-          Vue.resource('https://api.beeline.sg/routes/search_by_latlon?' + querystring.stringify({
+          Vue.resource(process.env.BEELINE_API + '/routes/search_by_latlon?' + querystring.stringify({
             startLat: context.state.origin.lat,
             startLng: context.state.origin.lng,
             endLat: context.state.destination.lat,
@@ -250,7 +250,7 @@ export function createStore() {
       },
       fetchSuggestions(context) {
         if (context.state.idToken) {
-          Vue.http.get('http://localhost:8989/suggestions/web',
+          Vue.http.get(process.env.BEELINE_API + '/suggestions/web',
           {
             headers: {
               authorization: `Bearer ${context.state.idToken}`

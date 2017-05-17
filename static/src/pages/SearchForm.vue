@@ -271,7 +271,7 @@ export default {
         timeMs = timeMs.split(':')
         timeMs = 3600000 * timeMs[0] + 60000 * timeMs[1];
 
-        return this.$http.post('http://localhost:8989/suggestions/web', {
+        return this.$http.post(process.env.BEELINE_API + '/suggestions/web', {
           boardLat: this.origin.lat,
           boardLon: this.origin.lng,
           alightLat: this.destination.lat,
@@ -279,7 +279,7 @@ export default {
           time: timeMs,
           email: this.decodedIdToken.email,
           emailVerification: {
-            type: 'token',
+            type: 'auth0',
             data: this.idToken
           }
         });

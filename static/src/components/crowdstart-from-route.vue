@@ -192,7 +192,7 @@ export default {
     },
   },
   created() {
-    this.$http.get('https://api.beeline.sg/stops')
+    this.$http.get(process.env.BEELINE_API + '/stops')
     .then(r => r.json())
     .then(ss => {
       this.stops = ss

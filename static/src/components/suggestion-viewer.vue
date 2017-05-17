@@ -3,8 +3,8 @@
     <td>{{index}}</td>
     <td>{{board}}</td>
     <td>{{alight}}</td>
-    <td>{{suggestion.time - 480 * 60000| formatTime}}</td>
-    <td>{{suggestion.createdAt}}</td>
+    <td>{{suggestion.time - 480 * 60000 | formatTime}}</td>
+    <td>{{suggestion.createdAt | formatDateTime}}</td>
     <td><button class="btn btn-danger" @click="destroy">Delete</button></td>
     <td><button class="btn btn-default" @click="view">View</button></td>
   </tr>
@@ -15,7 +15,7 @@ import querystring from 'querystring';
 import Vue from 'vue';
 
 function geocode(coords) {
-  return Vue.resource('https://api.beeline.sg/onemap/revgeocode?' + querystring.stringify({
+  return Vue.resource(process.env.BEELINE_API + '/onemap/revgeocode?' + querystring.stringify({
     location: `${coords[0]},${coords[1]}`
   })).get()
   .then(r => r.json())

@@ -38,7 +38,6 @@ export default {
   },
   data() {
     return {
-      suggestions: []
     }
   },
   created() {
@@ -69,7 +68,7 @@ export default {
     },
     destroy(suggestion) {
       if (confirm("Are you sure you want to delete this suggestion?")) {
-        this.$http.delete(`http://localhost:8989/suggestions/web/${suggestion.id}`, {
+        this.$http.delete(process.env.BEELINE_API + `/suggestions/web/${suggestion.id}`, {
           headers: {
             authorization: `Bearer ${this.idToken}`
           }
