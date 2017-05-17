@@ -26,7 +26,7 @@
       <gmap-marker v-for="stop in route.stops"
         :position="{lat: stop.lat, lng: stop.lng}">
       </gmap-marker>
-      <gmap-polyline :path="polylinePath">
+      <gmap-polyline v-if="polylinePath" :path="polylinePath">
       </gmap-polyline>
     </gmap-map>
   </div>
@@ -64,10 +64,33 @@ export default {
     RequestsTimeHistogram,
     SimilarRequests,
   },
+  data() {
+    return {
+      polylinePath: null
+    }
+  },
+  watch: {
+    polylinePathPromise: {
+      handler(promise) {
+        promise.then((path) => this.polylinePath = path)
+      },
+      immediate: true,
+    }
+  },
   computed: {
     ...mapState(['similarRequests']),
-    polylinePath() {
-      return this.route.stops.map(s => _.pick(s, ['lat', 'lng']))
+     polylinePathPromise() {
+      var indices = this.route.stops.map(stop => stop.index)
+      var data = Vue.resource('/paths/' + indices.join('/')).get()
+        .then(r => r.json())
+        .then(rs => {
+          if (rs.status === 'success') {
+            return _.flatten(rs.payload).map(s => _.pick(s, ['lat', 'lng']))
+          } else {
+            throw new Error(rs.payload);
+          }
+        })
+      return data
     },
     numRequests() {
       return _.sum(this.route.requests.map(r => r.weight))
@@ -112,7 +135,8 @@ export default {
               coordinates: {
                 type: 'Point',
                 coordinates: [s.lng, s.lat],
-              }
+              },
+              index: s.index
             },
             time: 5 * 60 * 1000 * i // will be populated from the Directions API
           }))

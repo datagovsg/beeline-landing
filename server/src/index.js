@@ -116,6 +116,84 @@ server.route({
   },
 });
 
+
+server.route({
+  method: 'GET',
+  path: '/paths/{stops*}',
+  config: {
+    tags: ['api'],
+    description: `Given list of stops, get a proper polyline connecting all the stops.`,
+    validate: {
+      params: {
+        stops: Joi.string()
+      }
+    }
+  },
+  async handler(request, reply) {
+    try {
+      // Convert '/10/20/30/40' into [10, 20, 30, 40] since HapiJS does not support this.
+      var indices = request.params.stops.split('/').filter(x => x.length > 0).map(x => parseInt(x))
+      var result = await new Promise((resolve, reject) => {
+        var sock = zmq.socket('req')
+
+        sock.connect('tcp://127.0.0.1:5555')
+
+        sock.send(JSON.stringify({
+          type: 'getPath',
+          payload: {
+            indices: indices
+          }
+        }))
+
+        sock.on('message', m => resolve(JSON.parse(m)))
+        setTimeout(() => {
+          sock.unref();
+          reject(new Error("Timed out"));
+        }, 2 * 60000);
+      })
+      reply(result);
+    } catch (e) {
+      console.log(e.stack);
+      reply(e);
+    }
+  },
+});
+
+
+server.route({
+  method: 'GET',
+  path: '/bus_stops',
+  config: {
+    tags: ['api'],
+    description: `Get all bus stops from back-end.`
+  },
+  async handler(request, reply) {
+    try {
+      var result = await new Promise((resolve, reject) => {
+        var sock = zmq.socket('req')
+
+        sock.connect('tcp://127.0.0.1:5555')
+
+        sock.send(JSON.stringify({
+          type: 'getBusStops',
+          payload: {}
+        }))
+
+        sock.on('message', m => resolve(JSON.parse(m)))
+        setTimeout(() => {
+          sock.unref();
+          reject(new Error("Timed out"));
+        }, 2 * 60000);
+      })
+      reply(result);
+    } catch (e) {
+      console.log(e.stack);
+      reply(e);
+    }
+  },
+});
+
+
 server.start()
 .then(() => {
   console.log(`Server started on port ${server.info.port}`)

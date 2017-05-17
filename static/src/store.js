@@ -45,7 +45,6 @@ export function createStore() {
       },
 
       crowdstartRoute: {},
-      crowdstartRoutePolylinePath: [],
       crowdstartRouteStartTime: 0,
 
       idToken: null,
@@ -87,9 +86,6 @@ export function createStore() {
       },
       setAutogenerateSettings(state, settings) {
         state.autogenerateSettings = settings;
-      },
-      setCrowdstartRoutePolylinePath(state, path) {
-        state.crowdstartRoutePolylinePath = path;
       },
       setCrowdstartRouteStartTime(state, time) {
         state.crowdstartRouteStartTime = time;
