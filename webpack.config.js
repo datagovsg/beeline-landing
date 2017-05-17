@@ -7,6 +7,7 @@ var env = process.env.NODE_ENV
 var cssSourceMapDev = (env === 'development' && config.dev.cssSourceMap)
 var cssSourceMapProd = (env === 'production' && config.build.productionSourceMap)
 var useCssSourceMap = cssSourceMapDev || cssSourceMapProd
+var InlineEnviromentVariablesPlugin = require('inline-environment-variables-webpack-plugin')
 
 module.exports = {
   entry: {
@@ -78,6 +79,11 @@ module.exports = {
       vue: 'vue/dist/vue'
     }
   },
+  plugins: [
+    new InlineEnviromentVariablesPlugin([
+      'BEELINE_API'
+    ])
+  ],
   // eslint: {
   //   formatter: require('eslint-friendly-formatter')
   // },
