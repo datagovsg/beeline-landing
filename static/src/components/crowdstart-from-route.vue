@@ -159,6 +159,9 @@ export default {
       }))
     },
     polylinePathPromise() {
+      if (this.route.trips === undefined) {
+        return;
+      }
       var indices = this.route.trips[0].tripStops.map(tripStop => tripStop.stop.index)
       var data = vue.resource('/paths/' + indices.join('/')).get()
         .then(r => r.json())
@@ -198,7 +201,9 @@ export default {
     },
     polylinePathPromise: {
       handler(promise) {
-        promise.then((path) => this.polylinePath = path)
+        if (promise) {
+          promise.then((path) => this.polylinePath = path)
+        }
       },
       immediate: true,
     }
