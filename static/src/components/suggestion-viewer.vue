@@ -13,10 +13,9 @@
 <script>
 import querystring from 'querystring';
 import Vue from 'vue';
-import constants from '../utils/constants.js'
 
 function geocode(coords) {
-  return Vue.resource(constants.BEELINE_API + '/onemap/revgeocode?' + querystring.stringify({
+  return Vue.resource(process.env.BEELINE_API + '/onemap/revgeocode?' + querystring.stringify({
     location: `${coords[0]},${coords[1]}`
   })).get()
   .then(r => r.json())

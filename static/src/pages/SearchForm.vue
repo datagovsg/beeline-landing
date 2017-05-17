@@ -171,7 +171,6 @@ import geocode from '../utils/geocoder';
 import A0Lock from '../utils/login.js';
 import scrollTo from '../utils/scrollTo.js';
 import TimeSelector from '../components/time-selector.vue';
-import constants from '../utils/constants.js'
 
 export default {
   props: ['origin', 'destination'],
@@ -272,7 +271,7 @@ export default {
         timeMs = timeMs.split(':')
         timeMs = 3600000 * timeMs[0] + 60000 * timeMs[1];
 
-        return this.$http.post(constants.BEELINE_API + '/suggestions/web', {
+        return this.$http.post(process.env.BEELINE_API + '/suggestions/web', {
           boardLat: this.origin.lat,
           boardLon: this.origin.lng,
           alightLat: this.destination.lat,

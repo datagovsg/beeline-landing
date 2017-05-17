@@ -89,7 +89,6 @@ import MinuteSelector from './minute-selector.vue';
 import SimilarRequests from '../components/similar-requests.vue';
 import { mapGetters, mapState, mapActions, mapMutations } from 'vuex'
 import {latlngDistance} from '../utils/latlngDistance';
-import constants from '../utils/constants.js'
 
 export default {
   props: ['route'],
@@ -193,7 +192,7 @@ export default {
     },
   },
   created() {
-    this.$http.get(constants.BEELINE_API + '/stops')
+    this.$http.get(process.env.BEELINE_API + '/stops')
     .then(r => r.json())
     .then(ss => {
       this.stops = ss

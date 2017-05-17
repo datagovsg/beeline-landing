@@ -80,9 +80,9 @@ module.exports = {
     }
   },
   plugins: [
-    new InlineEnviromentVariablesPlugin([
-      'BEELINE_API'
-    ])
+    new InlineEnviromentVariablesPlugin({
+      BEELINE_API: process.env.BEELINE_API || 'https://beeline-server-dev.herokuapp.com'
+    })
   ],
   // eslint: {
   //   formatter: require('eslint-friendly-formatter')
