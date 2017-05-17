@@ -21,6 +21,7 @@ import geocode from '../utils/geocoder';
 import {latlngDistance} from '../utils/latlngDistance';
 import _ from 'lodash';
 import assert from 'assert';
+import constants from '../utils/constants.js'
 
 export default {
   components: {
@@ -38,7 +39,7 @@ export default {
     }
   },
   created() {
-    this.$http.get('https://api.beeline.sg/stops')
+    this.$http.get(constants.BEELINE_API + '/stops')
     .then(r => r.json())
     .then(stops => this.stops = stops)
   },
@@ -69,7 +70,7 @@ export default {
       }
 
       var tripStops = this.proposedRoute.trips[0].tripStops
-      var postRouteResponse = await this.$http.post('https://api.beeline.sg/routes', {
+      var postRouteResponse = await this.$http.post(constants.BEELINE_API + '/routes', {
         label: routeLabel,
         from: tripStops[0].stop.description,
         to: tripStops[tripStops.length - 1].stop.description,
@@ -87,7 +88,7 @@ export default {
 
       assert.strictEqual(postRouteResponse.status, 200)
 
-      var postTripResponse = await this.$http.post('https://api.beeline.sg/trips', {
+      var postTripResponse = await this.$http.post(constants.BEELINE_API + '/trips', {
         routeId: postRouteResponse.data.id,
         date: date,
         capacity: 50,

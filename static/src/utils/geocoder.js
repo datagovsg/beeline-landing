@@ -1,4 +1,5 @@
 import Vue from 'vue';
+import constants from '../utils/constants.js'
 var Geocoder = null;
 
 export default function geocode(latlng) {
@@ -22,7 +23,7 @@ export default function geocode(latlng) {
 }
 
 export function geocodeOM(latlng) {
-  return Vue.resource(`https://api.beeline.sg/onemap/revgeocode?location=${latlng.lng},${latlng.lat}`)
+  return Vue.resource(constants.BEELINE_API + `/onemap/revgeocode?location=${latlng.lng},${latlng.lat}`)
   .get()
   .then(r => r.json())
   .then(r => {

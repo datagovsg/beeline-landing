@@ -30,6 +30,7 @@
 <script>
 import { mapGetters, mapState, mapActions, mapMutations } from 'vuex'
 import SuggestionViewer from '../components/suggestion-viewer.vue'
+import constants from '../utils/constants.js'
 
 export default {
   props: ['origin', 'destination'],
@@ -68,7 +69,7 @@ export default {
     },
     destroy(suggestion) {
       if (confirm("Are you sure you want to delete this suggestion?")) {
-        this.$http.delete(`https://api.beeline.sg/suggestions/web/${suggestion.id}`, {
+        this.$http.delete(constants.BEELINE_API + `/suggestions/web/${suggestion.id}`, {
           headers: {
             authorization: `Bearer ${this.idToken}`
           }
