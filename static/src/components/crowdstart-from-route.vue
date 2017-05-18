@@ -152,7 +152,7 @@ export default {
           .subtract(timeDifference, 'milliseconds').valueOf();
       })
 
-      this.$store.commit('setCrowdstartRouteStartTime', newTimes[0])
+      this.$store.commit('updateCrowdstartRouteStartTime', newTimes[0])
 
       return _.zip(currentStops, newTimes).map(([st, tm]) => ({
         ...st,

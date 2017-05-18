@@ -45,7 +45,6 @@ export function createStore() {
       },
 
       crowdstartRoute: {},
-      crowdstartRouteStartTime: 0,
 
       idToken: null,
       profile: null,
@@ -88,13 +87,12 @@ export function createStore() {
       setAutogenerateSettings(state, settings) {
         state.autogenerateSettings = settings;
       },
-      setCrowdstartRouteStartTime(state, time) {
-        state.crowdstartRouteStartTime = time;
-      },
       crowdstartRoute(state, route) {
         state.crowdstartRoute = route;
       },
-
+      updateCrowdstartRouteStartTime(state, startTime) {
+        state.crowdstartRoute.startTime = startTime;
+      },
       setProfile(state, {profile, idToken}) {
         // Persist to local storage
         try {
