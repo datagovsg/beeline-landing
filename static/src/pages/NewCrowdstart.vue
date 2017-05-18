@@ -91,6 +91,12 @@ export default {
         }, defaultOptions)
 
       assert.strictEqual(postRouteResponse.status, 200)
+
+      if (postRouteResponse.status === 200) {
+        alert('You have successfully suggested this route!')
+      } else {
+        alert('Something went wrong, suggested route is not added into database.')
+      }
     }
   }
 }
