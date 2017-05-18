@@ -68,17 +68,6 @@ export default {
         }
       }
 
-      var indices = this.crowdstartRoute.trips[0].tripStops.map(tripStop => tripStop.stop.index)
-      var crowdstartRoutePolylinePath = await vue.resource('/paths/' + indices.join('/')).get()
-        .then(r => r.json())
-        .then(rs => {
-          if (rs.status === 'success') {
-            return _.flatten(rs.payload).map(s => _.pick(s, ['lat', 'lng']))
-          } else {
-            throw new Error(rs.payload);
-          }
-        })
-
       var postRouteResponse = await this.$http.post(process.env.BEELINE_API + '/custom/userSuggestedRoutes/userRoutes', {
         name: routeName,
         busStops: this.crowdstartRoute.trips[0].tripStops.map(ts => ({
@@ -87,7 +76,7 @@ export default {
                 })),
         path: {
           type: "LineString",
-          coordinates: crowdstartRoutePolylinePath.map(point => [point.lat, point.lng])
+          coordinates: this.crowdstartRoute.path.map(point => [point.lat, point.lng])
         }
         }, defaultOptions)
 

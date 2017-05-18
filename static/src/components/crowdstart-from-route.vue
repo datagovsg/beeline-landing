@@ -69,7 +69,7 @@
               </button>
             </gmap-info-window>
 
-            <gmap-polyline v-if="polylinePath" :path="polylinePath">
+            <gmap-polyline v-if="route.path" :path="route.path">
             </gmap-polyline>
           </gmap-map>
         </div>
@@ -110,7 +110,6 @@ export default {
       stops: [],
       selectedNewStop: null,
       selectedCurrentStop: null,
-      polylinePath: null
     }
   },
   components: {
@@ -160,22 +159,6 @@ export default {
         _original: st
       }))
     },
-    polylinePathPromise() {
-      if (this.route.trips === undefined) {
-        return;
-      }
-      var indices = this.route.trips[0].tripStops.map(tripStop => tripStop.stop.index)
-      var data = vue.resource('/paths/' + indices.join('/')).get()
-        .then(r => r.json())
-        .then(rs => {
-          if (rs.status === 'success') {
-            return _.flatten(rs.payload).map(s => _.pick(s, ['lat', 'lng']))
-          } else {
-            throw new Error(rs.payload);
-          }
-        })
-      return data
-    },
     nearbyPublicStops() {
       if (!this.origin || !this.destination) return [];
 
@@ -201,14 +184,6 @@ export default {
         }]
       })
     },
-    polylinePathPromise: {
-      handler(promise) {
-        if (promise) {
-          promise.then((path) => this.polylinePath = path)
-        }
-      },
-      immediate: true,
-    }
   },
   created() {
     vue.resource('/bus_stops').get()

@@ -93,6 +93,9 @@ export function createStore() {
       updateCrowdstartRouteStartTime(state, startTime) {
         state.crowdstartRoute.startTime = startTime;
       },
+      updateCrowdstartRoutePath(state, path) {
+        state.crowdstartRoute.path = path;
+      },
       setProfile(state, {profile, idToken}) {
         // Persist to local storage
         try {
@@ -320,6 +323,20 @@ export function createStore() {
       updateCrowdstartRoute(context, route) {
         context.commit('crowdstartRoute', route);
         context.dispatch('recomputeTimings');
+        context.dispatch('recomputePath', route);
+      },
+      recomputePath(context, route) {
+        var indices = route.trips[0].tripStops.map(tripStop => tripStop.stop.index);
+        Vue.resource('/paths/' + indices.join('/')).get()
+          .then(r => r.json())
+          .then(rs => {
+            if (rs.status === 'success') {
+              route.path = _.flatten(rs.payload).map(s => _.pick(s, ['lat', 'lng']));
+              context.commit('crowdstartRoute', route);
+            } else {
+              throw new Error(rs.payload);
+            }
+          })
       },
       recomputeTimings(context) {
         assert(context.state.crowdstartRoute);

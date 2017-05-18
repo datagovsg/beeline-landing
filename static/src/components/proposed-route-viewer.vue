@@ -140,7 +140,8 @@ export default {
             },
             time: 5 * 60 * 1000 * i // will be populated from the Directions API
           }))
-        }]
+        }],
+        path: this.polylinePath
       };
 
       this.$store.commit('crowdstartRoute', simulatedRoute);
