@@ -15,7 +15,7 @@
         <gmap-marker v-for="stop in crowdstart.userSuggestedRouteStops"
           :position="{lat: stop.stop.coordinates.coordinates[1], lng: stop.stop.coordinates.coordinates[0]}">
         </gmap-marker>
-        <gmap-polyline v-if="crowdstart.path" :path="crowdstart.path">
+        <gmap-polyline :path="pathCoordinates">
         </gmap-polyline>
       </gmap-map>
     </div>
@@ -46,6 +46,9 @@ export default {
       var lastStop = this.crowdstart.userSuggestedRouteStops[numStops - 1]
       return (firstStop.stop.coordinates.coordinates[0]
         + lastStop.stop.coordinates.coordinates[0]) / 2;
+    },
+    pathCoordinates() {
+      return (this.crowdstart.path) ? this.crowdstart.path.coordinates.map(c => ({lat: c[0], lng: c[1]})) : []
     }
   },
 }
