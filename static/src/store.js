@@ -53,6 +53,7 @@ export function createStore() {
       adminProfile: null,
 
       suggestions: null,
+      crowdstarts: null,
 
       now: Date.now(),
     },
@@ -119,6 +120,9 @@ export function createStore() {
       },
       setSuggestions(state, suggestions) {
         state.suggestions = suggestions;
+      },
+      setCrowdstarts(state, crowdstarts) {
+        state.crowdstarts = crowdstarts;
       }
     },
     getters: {
@@ -269,6 +273,25 @@ export function createStore() {
           })
         } else {
           context.commit('setSuggestions', null);
+        }
+      },
+      fetchCrowdstarts(context) {
+        if (context.state.idToken) {
+          Vue.http.get(process.env.BEELINE_API + '/custom/userSuggestedRoutes/userRoutes',
+          {
+            headers: {
+              authorization: `Bearer ${context.state.idToken}`
+            }
+          })
+          .then(r => r.data)
+          .then(results => {
+            context.commit('setCrowdstarts', results);
+          })
+          .catch(() => {
+            context.commit('setCrowdstarts', null);
+          })
+        } else {
+          context.commit('setCrowdstarts', null);
         }
       },
       logIn(context) {
