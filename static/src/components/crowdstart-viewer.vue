@@ -10,16 +10,15 @@
           </li>
         </ol>
       </div>
-    </div>
 
-    <!-- FIXME: This is not rendering, no idea why yet. -->
-    <gmap-map class="gmap" :center="{lat: 1.38, lng: 103.8}" :zoom="12">
-      <gmap-marker v-for="stop in crowdstart.userSuggestedRouteStops"
-        :position="{lat: stop.stop.coordinates.coordinates[1], lng: stop.stop.coordinates.coordinates[0]}">
-      </gmap-marker>
-      <gmap-polyline v-if="crowdstart.path" :path="crowdstart.path">
-      </gmap-polyline>
-    </gmap-map>
+      <gmap-map class="gmap" :center="{lat: centerLat, lng: centerLng}" :zoom="12">
+        <gmap-marker v-for="stop in crowdstart.userSuggestedRouteStops"
+          :position="{lat: stop.stop.coordinates.coordinates[1], lng: stop.stop.coordinates.coordinates[0]}">
+        </gmap-marker>
+        <gmap-polyline v-if="crowdstart.path" :path="crowdstart.path">
+        </gmap-polyline>
+      </gmap-map>
+    </div>
   </div>
 </template>
 
@@ -27,15 +26,44 @@
 export default {
   props: ['crowdstart', 'index'],
   filters: require('../utils/filters').default,
+  computed: {
+    centerLat() {
+      var numStops = this.crowdstart.userSuggestedRouteStops.length
+      if (numStops === 0) {
+        return 1.38;
+      }
+      var firstStop = this.crowdstart.userSuggestedRouteStops[0]
+      var lastStop = this.crowdstart.userSuggestedRouteStops[numStops - 1]
+      return (firstStop.stop.coordinates.coordinates[1]
+        + lastStop.stop.coordinates.coordinates[1]) / 2;
+    },
+    centerLng() {
+      var numStops = this.crowdstart.userSuggestedRouteStops.length
+      if (numStops === 0) {
+        return 103.8;
+      }
+      var firstStop = this.crowdstart.userSuggestedRouteStops[0]
+      var lastStop = this.crowdstart.userSuggestedRouteStops[numStops - 1]
+      return (firstStop.stop.coordinates.coordinates[0]
+        + lastStop.stop.coordinates.coordinates[0]) / 2;
+    }
+  },
 }
 </script>
 
 <style scoped lang="scss">
 .r {
   display: flex;
+  flex-direction: row;
 
   .stops-list {
-    flex: 1 0 auto;
+    flex: 0 0 400px;
+  }
+  .gmap.vue-map-container {
+    flex: 0 1 600px;
+    width: auto;
+    height: auto;
+    min-height: 400px;
   }
 }
 </style>
