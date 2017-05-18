@@ -5,7 +5,7 @@
       <crowdstart-from-route
         ref="routeEditor" @proposed-route-changed="proposedRoute = $event"
         :route="crowdstartRoute"
-        @crowdstart-route-changed="$store.commit('crowdstartRoute', $event)">
+        @crowdstart-route-changed="$store.dispatch('updateCrowdstartRoute', $event)">
       </crowdstart-from-route>
 
       <button class="btn btn-primary" @click="createRoute">Submit!</button>
@@ -51,6 +51,7 @@ export default {
     }
   },
   methods: {
+    ...mapActions(['updateCrowdstartRoute']),
     updateSetting() {
       this.$store.commit('setAutogenerateSettings', this.localSettings)
     },

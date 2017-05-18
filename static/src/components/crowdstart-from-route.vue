@@ -218,7 +218,6 @@ export default {
     })
   },
   methods: {
-    ...mapActions(['recomputeTimings']),
     addStop(stop) {
       var nearest = _(this.route.trips[0].tripStops)
         .map((ts, key) => [ts, key, latlngDistance(
@@ -243,7 +242,6 @@ export default {
       })
 
       this.selectedNewStop = null;
-      this.$store.dispatch('recomputeTimings')
     },
     removeStop(stop) {
       var stopIndex = this.route.trips[0].tripStops.indexOf(stop);
@@ -257,8 +255,6 @@ export default {
             .concat(tss.slice(stopIndex + 1))
         }]
       })
-
-      this.$store.dispatch('recomputeTimings')
     },
     moveUp(stop) {
       var stopIndex = this.route.trips[0].tripStops.findIndex(ts => ts == stop._original);
@@ -299,8 +295,6 @@ export default {
             .concat(tss.slice(stopIndex + 2))
         }]
       })
-
-      this.$store.dispatch('recomputeTimings')
     },
     updateStop(event) {
       this.$emit('input', event.target.value)

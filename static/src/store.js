@@ -319,6 +319,10 @@ export function createStore() {
       adminLogOut(context) {
         context.commit('setAdminProfile', {profile: null, idToken: null});
       },
+      updateCrowdstartRoute(context, route) {
+        context.commit('crowdstartRoute', route);
+        context.dispatch('recomputeTimings');
+      },
       recomputeTimings(context) {
         assert(context.state.crowdstartRoute);
 
