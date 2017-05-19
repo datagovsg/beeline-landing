@@ -212,6 +212,9 @@ export default {
       this.$refs['new-crowdstart-route-map'].$mapObject.fitBounds(bounds);
     },
     addStop(stop) {
+      var busStopIndices = this.route.trips[0].tripStops.map(ts => ts.stop.index)
+      var stopIndex = busStopIndices.indexOf(stop.index);
+      if (stopIndex != -1) return; // Don't add existing trip stop.
       var nearest = _(this.route.trips[0].tripStops)
         .map((ts, key) => [ts, key, latlngDistance(
           [stop.coordinates.coordinates[1], stop.coordinates.coordinates[0]],
@@ -238,6 +241,7 @@ export default {
     },
     removeStop(stop) {
       var stopIndex = this.route.trips[0].tripStops.indexOf(stop);
+      if (stopIndex === -1) return; // Don't remove non-existing trip stop.
       var tss = this.route.trips[0].tripStops;
 
       this.$emit('crowdstart-route-changed', {
