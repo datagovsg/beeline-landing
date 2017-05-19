@@ -287,6 +287,7 @@ export default {
   }
   .new-crowdstart-map {
     flex: 2 0 auto;
+    min-height: 400px;
   }
 }
 </style>

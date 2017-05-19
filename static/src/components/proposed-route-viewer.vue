@@ -44,7 +44,7 @@
     flex: 0 1 800px;
     width: auto;
     height: auto;
-    min-height: 250px;
+    min-height: 400px;
   }
 }
 </style>
