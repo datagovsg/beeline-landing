@@ -19,15 +19,27 @@
             <minute-selector v-model="arrivalTimeMinute" />
           </label>
 
-          <ol>
-            <li v-for="stop in computedStops" :key="stop.stop.description">
-              <button class="btn btn-xs" @click="moveUp(stop)">Up</button>
-              <button class="btn btn-xs" @click="moveDown(stop)">Down</button>
-              <b>{{stop.time | formatTime}}</b>
-
-              {{stop.stop.description}}
-            </li>
-          </ol>
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th></th>
+                <th></th>
+                <th>Arrive at</th>
+                <th>Place</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="(stop, stopIndex) in computedStops" :key="stop.stop.description">
+                <td>{{stopIndex + 1}}</td>
+                <td>
+                  <button class="btn btn-xs" @click="moveUp(stop)">Up</button>
+                  <button class="btn btn-xs" @click="moveDown(stop)">Down</button>
+                </td>
+                <td><b>{{stop.time | formatTime}}</b></td>
+                <td>{{stop.stop.description}}</td>
+              </tr>
+            </tbody>
+          </table>
         </div>
         <div class="new-crowdstart-map">
           <gmap-map :center="{lat:1.38, lng:103.8}" :zoom="12"
