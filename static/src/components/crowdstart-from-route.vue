@@ -30,7 +30,8 @@
           </ol>
         </div>
         <div class="new-crowdstart-map">
-          <gmap-map :center="{lat:1.38, lng:103.8}" :zoom="12">
+          <gmap-map :center="{lat:1.38, lng:103.8}" :zoom="12"
+            ref="new-crowdstart-route-map">
             <similar-requests
               :requests="similarRequests"
             ></similar-requests>
@@ -122,6 +123,11 @@ export default {
     crowdstartUrl() {
       return `https://app.beeline.sg/#/tabs/crowdstart/${this.route.id}/detail`
     },
+    stopsCoordinates() {
+      return this.route.trips[0].tripStops
+        .map(stop => stop.stop.coordinates.coordinates)
+        .map(c => ({lat: c[1], lng: c[0]}))
+    },
     originalArrivalTime() {
       var tripStops = _.sortBy(this.route.trips[0].tripStops, ts => ts.time);
       return moment(tripStops[tripStops.length-1].time).utcOffset(480).format('hh:mm');
@@ -191,7 +197,20 @@ export default {
       this.stops = ss.payload.busStops
     })
   },
+  mounted() {
+    this.$refs['new-crowdstart-route-map'].$deferredReadyPromise.then(() => {
+      this.refit();
+    })
+  },
   methods: {
+    refit() {
+      var bounds = new google.maps.LatLngBounds();
+      for (let c of this.stopsCoordinates) {
+        bounds.extend(c)
+      }
+      this.$refs['new-crowdstart-route-map'].resize();
+      this.$refs['new-crowdstart-route-map'].$mapObject.fitBounds(bounds);
+    },
     addStop(stop) {
       var nearest = _(this.route.trips[0].tripStops)
         .map((ts, key) => [ts, key, latlngDistance(
