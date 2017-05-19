@@ -47,7 +47,7 @@
               :opened="!!selectedCurrentStop"
               v-if="selectedCurrentStop">
               {{selectedCurrentStop.stop.description}}<br/>
-              <button @click="removeStop(selectedCurrentStop)" class="btn btn-danger">
+              <button @click="removeStop(selectedCurrentStop); selectedCurrentStop = null" class="btn btn-danger">
                 Remove
               </button>
             </gmap-info-window>
@@ -55,6 +55,7 @@
             <!-- Stops to add -->
             <gmap-cluster :max-zoom="15">
               <gmap-marker v-for="stop in nearbyPublicStops"
+                v-if="tripBusStopIndices.indexOf(stop.index) === -1"
                 :key="stop.index"
                 :position="{lat:stop.coordinates.coordinates[1], lng:stop.coordinates.coordinates[0]}"
                 @click="selectedNewStop = stop">
@@ -124,9 +125,14 @@ export default {
       return `https://app.beeline.sg/#/tabs/crowdstart/${this.route.id}/detail`
     },
     stopsCoordinates() {
-      return this.route.trips[0].tripStops
-        .map(stop => stop.stop.coordinates.coordinates)
-        .map(c => ({lat: c[1], lng: c[0]}))
+      return (this.route && this.route.trips && this.route.trips[0].tripStops) ?
+        this.route.trips[0].tripStops
+          .map(stop => stop.stop.coordinates.coordinates)
+          .map(c => ({lat: c[1], lng: c[0]}))
+        : []
+    },
+    tripBusStopIndices() {
+      return this.route.trips[0].tripStops.map(ts => ts.stop.index)
     },
     originalArrivalTime() {
       var tripStops = _.sortBy(this.route.trips[0].tripStops, ts => ts.time);
@@ -198,9 +204,11 @@ export default {
     })
   },
   mounted() {
-    this.$refs['new-crowdstart-route-map'].$deferredReadyPromise.then(() => {
-      this.refit();
-    })
+    if (this.$refs['new-crowdstart-route-map']) {
+      this.$refs['new-crowdstart-route-map'].$deferredReadyPromise.then(() => {
+        this.refit();
+      })
+    }
   },
   methods: {
     refit() {
@@ -212,8 +220,7 @@ export default {
       this.$refs['new-crowdstart-route-map'].$mapObject.fitBounds(bounds);
     },
     addStop(stop) {
-      var busStopIndices = this.route.trips[0].tripStops.map(ts => ts.stop.index)
-      var stopIndex = busStopIndices.indexOf(stop.index);
+      var stopIndex = this.tripBusStopIndices.indexOf(stop.index);
       if (stopIndex != -1) return; // Don't add existing trip stop.
       var nearest = _(this.route.trips[0].tripStops)
         .map((ts, key) => [ts, key, latlngDistance(
