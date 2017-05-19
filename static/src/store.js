@@ -52,6 +52,7 @@ export function createStore() {
       adminProfile: null,
 
       suggestions: null,
+      crowdstarts: null,
 
       now: Date.now(),
     },
@@ -89,7 +90,12 @@ export function createStore() {
       crowdstartRoute(state, route) {
         state.crowdstartRoute = route;
       },
-
+      updateCrowdstartRouteStartTime(state, startTime) {
+        state.crowdstartRoute.startTime = startTime;
+      },
+      updateCrowdstartRoutePath(state, path) {
+        state.crowdstartRoute.path = path;
+      },
       setProfile(state, {profile, idToken}) {
         // Persist to local storage
         try {
@@ -115,6 +121,9 @@ export function createStore() {
       },
       setSuggestions(state, suggestions) {
         state.suggestions = suggestions;
+      },
+      setCrowdstarts(state, crowdstarts) {
+        state.crowdstarts = crowdstarts;
       }
     },
     getters: {
@@ -267,6 +276,25 @@ export function createStore() {
           context.commit('setSuggestions', null);
         }
       },
+      fetchCrowdstarts(context) {
+        if (context.state.idToken) {
+          Vue.http.get(process.env.BEELINE_API + '/custom/userSuggestedRoutes/userRoutes',
+          {
+            headers: {
+              authorization: `Bearer ${context.state.idToken}`
+            }
+          })
+          .then(r => r.data)
+          .then(results => {
+            context.commit('setCrowdstarts', results);
+          })
+          .catch(() => {
+            context.commit('setCrowdstarts', null);
+          })
+        } else {
+          context.commit('setCrowdstarts', null);
+        }
+      },
       logIn(context) {
         return logIn()
         .then((result) => {
@@ -291,6 +319,24 @@ export function createStore() {
       },
       adminLogOut(context) {
         context.commit('setAdminProfile', {profile: null, idToken: null});
+      },
+      updateCrowdstartRoute(context, route) {
+        context.commit('crowdstartRoute', route);
+        context.dispatch('recomputeTimings');
+        context.dispatch('recomputePath', route);
+      },
+      recomputePath(context, route) {
+        var indices = route.trips[0].tripStops.map(tripStop => tripStop.stop.index);
+        Vue.resource('/paths/' + indices.join('/')).get()
+          .then(r => r.json())
+          .then(rs => {
+            if (rs.status === 'success') {
+              route.path = _.flatten(rs.payload).map(s => _.pick(s, ['lat', 'lng']));
+              context.commit('crowdstartRoute', route);
+            } else {
+              throw new Error(rs.payload);
+            }
+          })
       },
       recomputeTimings(context) {
         assert(context.state.crowdstartRoute);

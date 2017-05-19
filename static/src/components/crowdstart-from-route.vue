@@ -69,7 +69,7 @@
               </button>
             </gmap-info-window>
 
-            <gmap-polyline v-if="polylinePath" :path="polylinePath">
+            <gmap-polyline v-if="route.path" :path="route.path">
             </gmap-polyline>
           </gmap-map>
         </div>
@@ -110,7 +110,6 @@ export default {
       stops: [],
       selectedNewStop: null,
       selectedCurrentStop: null,
-      polylinePath: null
     }
   },
   components: {
@@ -158,22 +157,6 @@ export default {
         _original: st
       }))
     },
-    polylinePathPromise() {
-      if (this.route.trips === undefined) {
-        return;
-      }
-      var indices = this.route.trips[0].tripStops.map(tripStop => tripStop.stop.index)
-      var data = vue.resource('/paths/' + indices.join('/')).get()
-        .then(r => r.json())
-        .then(rs => {
-          if (rs.status === 'success') {
-            return _.flatten(rs.payload).map(s => _.pick(s, ['lat', 'lng']))
-          } else {
-            throw new Error(rs.payload);
-          }
-        })
-      return data
-    },
     nearbyPublicStops() {
       if (!this.origin || !this.destination) return [];
 
@@ -198,15 +181,8 @@ export default {
           tripStops: v
         }]
       })
+      this.$store.commit('updateCrowdstartRouteStartTime', v[0].time)
     },
-    polylinePathPromise: {
-      handler(promise) {
-        if (promise) {
-          promise.then((path) => this.polylinePath = path)
-        }
-      },
-      immediate: true,
-    }
   },
   created() {
     vue.resource('/bus_stops').get()
@@ -216,7 +192,6 @@ export default {
     })
   },
   methods: {
-    ...mapActions(['recomputeTimings']),
     addStop(stop) {
       var nearest = _(this.route.trips[0].tripStops)
         .map((ts, key) => [ts, key, latlngDistance(
@@ -241,7 +216,6 @@ export default {
       })
 
       this.selectedNewStop = null;
-      this.$store.dispatch('recomputeTimings')
     },
     removeStop(stop) {
       var stopIndex = this.route.trips[0].tripStops.indexOf(stop);
@@ -255,8 +229,6 @@ export default {
             .concat(tss.slice(stopIndex + 1))
         }]
       })
-
-      this.$store.dispatch('recomputeTimings')
     },
     moveUp(stop) {
       var stopIndex = this.route.trips[0].tripStops.findIndex(ts => ts == stop._original);
@@ -277,8 +249,6 @@ export default {
             .concat(tss.slice(stopIndex + 1))
         }]
       })
-
-      this.$store.dispatch('recomputeTimings')
     },
     moveDown(stop) {
       var stopIndex = this.route.trips[0].tripStops.findIndex(ts => ts == stop._original);
@@ -299,8 +269,6 @@ export default {
             .concat(tss.slice(stopIndex + 2))
         }]
       })
-
-      this.$store.dispatch('recomputeTimings')
     },
     updateStop(event) {
       this.$emit('input', event.target.value)

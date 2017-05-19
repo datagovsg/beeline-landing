@@ -40,6 +40,9 @@
       <router-link tag="li" active-class="active" to="new">
         <a>New Crowdstart Route</a>
       </router-link>
+      <router-link tag="li" active-class="active" to="crowdstarts">
+        <a>My Crowdstart Routes</a>
+      </router-link>
       <li>
         <img src="/static/img/loading.svg" v-show="loadingRequests"
           class="loading-spinner" />
@@ -112,18 +115,6 @@ export default {
     ...mapActions(['logIn', 'logOut', 'adminLogIn', 'adminLogOut'])
   }
 }
-
-function latlngDistance(ll1, ll2) {
-  var rr1 = [ll1[0] / 180 * Math.PI, ll1[1] / 180 * Math.PI]
-  var rr2 = [ll2[0] / 180 * Math.PI, ll2[1] / 180 * Math.PI]
-
-  var dx = (rr1[1] - rr2[1]) * Math.cos(0.5 * (rr1[0] + rr2[0]))
-  var dy = rr1[0] - rr2[0]
-
-  var dist = Math.sqrt(dx * dx + dy * dy) * 6371000
-  return dist
-}
-
 
 </script>
 
