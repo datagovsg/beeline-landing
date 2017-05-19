@@ -151,8 +151,6 @@ export default {
           .subtract(timeDifference, 'milliseconds').valueOf();
       })
 
-      this.$store.commit('updateCrowdstartRouteStartTime', newTimes[0])
-
       return _.zip(currentStops, newTimes).map(([st, tm]) => ({
         ...st,
         time: tm,
@@ -183,6 +181,7 @@ export default {
           tripStops: v
         }]
       })
+      this.$store.commit('updateCrowdstartRouteStartTime', v[0].time)
     },
   },
   created() {
