@@ -105,7 +105,7 @@ export default {
           return {
             url: `https://admin.beeline.sg/img/stopBoard${leftPad(stopIndex + 1, 3, '0')}.png`,
             scaledSize: window.google && new google.maps.Size(48, 48),
-	          anchor: window.google && new google.maps.Point(24, 24)
+            anchor: window.google && new google.maps.Point(24, 24)
           }
         }
       },
