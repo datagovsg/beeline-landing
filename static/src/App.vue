@@ -9,9 +9,6 @@
     </div>
 
     <ul class="nav nav-tabs">
-      <router-link tag="li" active-class="active" to="bulk">
-        <a>Bulk</a>
-      </router-link>
       <router-link tag="li" active-class="active" to="search">
         <a>Search</a>
       </router-link>

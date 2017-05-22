@@ -13,7 +13,6 @@ import NewCrowdstart from './pages/NewCrowdstart.vue';
 import Crowdstarts from './pages/Crowdstarts.vue';
 import SearchForm from './pages/SearchForm.vue';
 import Suggestions from './pages/Suggestions.vue';
-import BulkForm from './pages/BulkForm.vue';
 import mapBus from './utils/mapBus';
 import {createStore} from './store';
 
@@ -31,9 +30,6 @@ Vue.use(VueGoogleMaps, {
 
 const router = new VueRouter({
   routes: [
-    {
-      path: '/:o/:d/bulk', component: BulkForm, name: 'bulk'
-    },
     {
       path: '/:o/:d/search', component: SearchForm, name: 'search'
     },
