@@ -6,6 +6,9 @@
         :crowdstart="crowdstart" :index="index + 1">
       </crowdstart-viewer>
     </template>
+    <template v-else-if="idToken">
+      ...loading...
+    </template>
     <template v-else>
       You are not logged in
     </template>
@@ -33,7 +36,7 @@ export default {
     }
   },
   computed: {
-    ...mapState(['crowdstarts']),
+    ...mapState(['crowdstarts', 'idToken']),
   },
   methods: {
     ...mapActions(['fetchCrowdstarts']),

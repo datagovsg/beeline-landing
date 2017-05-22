@@ -22,6 +22,9 @@
       </tbody>
     </table>
   </div>
+  <div v-else-if="idToken">
+    ...loading...
+  </div>
   <div v-else>
     You are not logged in
   </div>
