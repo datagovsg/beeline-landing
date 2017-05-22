@@ -19,27 +19,23 @@
             <minute-selector v-model="arrivalTimeMinute" />
           </label>
 
-          <table class="table table-striped">
+          <table class="table table-hover">
             <thead>
               <tr>
-                <th></th>
                 <th></th>
                 <th>Arrive at</th>
                 <th>Place</th>
               </tr>
             </thead>
-            <tbody>
-              <tr v-for="(stop, stopIndex) in computedStops" :key="stop.stop.description">
+            <draggable :computedStops="computedStops" :element="'tbody'" @update="onUpdate">
+              <tr class="row-item" v-for="(stop, stopIndex) in computedStops" :key="stop.stop.description">
                 <td>{{stopIndex + 1}}</td>
-                <td>
-                  <button class="btn btn-xs" @click="moveUp(stop)">Up</button>
-                  <button class="btn btn-xs" @click="moveDown(stop)">Down</button>
-                </td>
                 <td><b>{{stop.time | formatTime}}</b></td>
                 <td>{{stop.stop.description}}</td>
               </tr>
-            </tbody>
+            </draggable>
           </table>
+
         </div>
         <div class="new-crowdstart-map">
           <gmap-map :center="{lat:1.38, lng:103.8}" :zoom="12"
@@ -103,6 +99,7 @@ import MinuteSelector from './minute-selector.vue';
 import SimilarRequests from '../components/similar-requests.vue';
 import { mapGetters, mapState, mapActions, mapMutations } from 'vuex'
 import {latlngDistance} from '../utils/latlngDistance';
+import Draggable from 'vuedraggable'
 
 export default {
   props: ['route'],
@@ -127,6 +124,7 @@ export default {
     }
   },
   components: {
+    Draggable,
     HourSelector,
     MinuteSelector,
     SimilarRequests,
@@ -188,11 +186,11 @@ export default {
         latlngDistance(
           [s.coordinates.coordinates[1], s.coordinates.coordinates[0]],
           [this.origin.lat, this.origin.lng]
-        ) < 5000 ||
+        ) < 3000 ||
         latlngDistance(
           [s.coordinates.coordinates[1], s.coordinates.coordinates[0]],
           [this.destination.lat, this.destination.lng]
-        ) < 5000
+        ) < 3000
       )
     }
   },
@@ -230,6 +228,41 @@ export default {
       }
       this.$refs['new-crowdstart-route-map'].resize();
       this.$refs['new-crowdstart-route-map'].$mapObject.fitBounds(bounds);
+    },
+    onUpdate(event) {
+      if (event.oldIndex > event.newIndex) {
+        this.moveUp(event.oldIndex, event.newIndex)
+      } else {
+        this.moveDown(event.oldIndex, event.newIndex)
+      }
+    },
+    moveUp(oldIndex, newIndex) {
+      var tss = this.route.trips[0].tripStops;
+
+      this.$emit('crowdstart-route-changed', {
+        ...this.route,
+        trips: [{
+          ...this.route.trips[0],
+          tripStops: tss.slice(0, newIndex)
+            .concat(tss.slice(oldIndex, oldIndex + 1))
+            .concat(tss.slice(newIndex, oldIndex))
+            .concat(tss.slice(oldIndex + 1))
+        }]
+      })
+    },
+    moveDown(oldIndex, newIndex) {
+      var tss = this.route.trips[0].tripStops;
+
+      this.$emit('crowdstart-route-changed', {
+        ...this.route,
+        trips: [{
+          ...this.route.trips[0],
+          tripStops: tss.slice(0, oldIndex)
+            .concat(tss.slice(oldIndex + 1, newIndex + 1))
+            .concat(tss.slice(oldIndex, oldIndex + 1))
+            .concat(tss.slice(newIndex + 1))
+        }]
+      })
     },
     addStop(stop) {
       var stopIndex = this.tripBusStopIndices.indexOf(stop.index);
@@ -272,46 +305,6 @@ export default {
         }]
       })
     },
-    moveUp(stop) {
-      var stopIndex = this.route.trips[0].tripStops.findIndex(ts => ts == stop._original);
-      var tss = this.route.trips[0].tripStops;
-
-      assert(stopIndex !== -1)
-      if (stopIndex == 0) {
-        return;
-      }
-
-      this.$emit('crowdstart-route-changed', {
-        ...this.route,
-        trips: [{
-          ...this.route.trips[0],
-          tripStops: tss.slice(0, stopIndex - 1)
-            .concat(tss.slice(stopIndex, stopIndex + 1))
-            .concat(tss.slice(stopIndex - 1, stopIndex))
-            .concat(tss.slice(stopIndex + 1))
-        }]
-      })
-    },
-    moveDown(stop) {
-      var stopIndex = this.route.trips[0].tripStops.findIndex(ts => ts == stop._original);
-      var tss = this.route.trips[0].tripStops;
-
-      assert(stopIndex !== -1)
-      if (stopIndex == this.route.trips[0].tripStops.length - 1) {
-        return;
-      }
-
-      this.$emit('crowdstart-route-changed', {
-        ...this.route,
-        trips: [{
-          ...this.route.trips[0],
-          tripStops: tss.slice(0, stopIndex)
-            .concat(tss.slice(stopIndex + 1, stopIndex + 2))
-            .concat(tss.slice(stopIndex, stopIndex + 1))
-            .concat(tss.slice(stopIndex + 2))
-        }]
-      })
-    },
     updateStop(event) {
       this.$emit('input', event.target.value)
     }
@@ -332,5 +325,13 @@ export default {
     width: 600px;
     height: 600px;
   }
+}
+
+.table th, .table td {
+  border-top: none !important; 
+}
+
+.row-item {
+  cursor: move;
 }
 </style>
