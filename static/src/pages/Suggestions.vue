@@ -32,7 +32,7 @@ import { mapGetters, mapState, mapActions, mapMutations } from 'vuex'
 import SuggestionViewer from '../components/suggestion-viewer.vue'
 
 export default {
-  props: ['origin', 'destination'],
+  props: ['origin', 'destination', 'arrivalTime'],
   components: {
     SuggestionViewer
   },
@@ -64,6 +64,7 @@ export default {
         lat: suggestion.alight.coordinates[1],
         lng: suggestion.alight.coordinates[0],
       });
+      this.$store.commit('setArrivalTime', suggestion.time);
       this.$router.push('search');
     },
     destroy(suggestion) {

@@ -25,6 +25,7 @@ export function createStore() {
     state: {
       origin: null,
       destination: null,
+      arrivalTime: null,
       selectedRoute: null,
       similarRequests: null,
 
@@ -59,6 +60,9 @@ export function createStore() {
       },
       setDestination(state, destination) {
         state.destination = destination;
+      },
+      setArrivalTime(state, arrivalTime) {
+        state.arrivalTime = arrivalTime;
       },
       setSelectedRoute(state, route) {
         state.selectedRoute = route;
