@@ -42,9 +42,8 @@
   }
   .gmap.vue-map-container {
     flex: 0 1 800px;
-    width: auto;
-    height: auto;
-    min-height: 400px;
+    width: 600px;
+    height: 600px;
   }
 }
 </style>
