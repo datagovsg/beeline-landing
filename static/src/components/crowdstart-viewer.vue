@@ -13,9 +13,18 @@
 
       <gmap-map class="gmap" :center="{lat: 1.38, lng: 103.8}" :zoom="12"
         ref="crowdstart-route-map">
-        <gmap-marker v-for="stop in crowdstart.userSuggestedRouteStops"
-          :position="{lat: stop.stop.coordinates.coordinates[1], lng: stop.stop.coordinates.coordinates[0]}">
+        <gmap-marker v-for="(stop, stopIndex) in crowdstart.userSuggestedRouteStops"
+          :icon="filters.stopIcon(stopIndex)"
+          :position="{lat: stop.stop.coordinates.coordinates[1], lng: stop.stop.coordinates.coordinates[0]}"
+          @click="selectedCurrentStop = stop">
         </gmap-marker>
+        <gmap-info-window @closeclick="selectedCurrentStop = null"
+          :position="{lat:selectedCurrentStop.stop.coordinates.coordinates[1], lng:selectedCurrentStop.stop.coordinates.coordinates[0]}"
+          :opened="!!selectedCurrentStop"
+          v-if="selectedCurrentStop">
+          {{selectedCurrentStop.stop.description}}<br/>
+        </gmap-info-window>
+
         <gmap-polyline :path="pathCoordinates">
         </gmap-polyline>
       </gmap-map>
@@ -25,10 +34,26 @@
 
 <script>
 import _ from 'lodash';
+import leftPad from 'left-pad';
 
 export default {
   props: ['crowdstart', 'index'],
   filters: require('../utils/filters').default,
+  data() {
+    return {
+      selectedCurrentStop: null,
+      filters: {
+        stopIcon(stopIndex) {
+          stopIndex = parseInt(stopIndex);
+          return {
+            url: `https://admin.beeline.sg/img/stopBoard${leftPad(stopIndex + 1, 3, '0')}.png`,
+            scaledSize: window.google && new google.maps.Size(36, 36),
+            anchor: window.google && new google.maps.Point(18, 18)
+          }
+        }
+      },
+    }
+  },
   computed: {
     pathCoordinates() {
       return (this.crowdstart.path) ? 
@@ -69,10 +94,9 @@ export default {
     flex: 0 0 400px;
   }
   .gmap.vue-map-container {
-    flex: 0 1 600px;
-    width: auto;
-    height: auto;
-    min-height: 400px;
+    flex: 0 1 800px;
+    width: 600px;
+    height: 600px;
   }
 }
 </style>
