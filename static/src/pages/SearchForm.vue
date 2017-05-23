@@ -92,9 +92,9 @@
           <p>
             <label>
               Arrival time at destination:
-              <hour-selector :value="timeHour" @input="updateHourOfArrivalTime($event)" />
+              <hour-selector :value="timeHour" @input="updateArrivalTime($event, timeMinute)" />
               :
-              <minute-selector :value="timeMinute" @input="updateMinuteOfArrivalTime($event)" />
+              <minute-selector :value="timeMinute" @input="updateArrivalTime(timeHour, $event)" />
             </label>
             <button class="btn btn-primary" @click="suggest"
               type="button" :disabled="suggestions && suggestions.length >= 5">
@@ -262,11 +262,8 @@ export default {
       this.setOrigin({lat: parseFloat(parts[1]), lng: parseFloat(parts[2])})
       this.setDestination({lat: parseFloat(parts[3]), lng: parseFloat(parts[4])})
     },
-    updateHourOfArrivalTime(hour) {
-      this.$store.commit('setArrivalTime', parseInt(hour) * 60 * 60000 + this.timeMinute * 60000);
-    },
-    updateMinuteOfArrivalTime(minute) {
-      this.$store.commit('setArrivalTime', this.timeHour * 60 * 60000 + parseInt(minute) * 60000);
+    updateArrivalTime(hour, minute) {
+      this.$store.commit('setArrivalTime', parseInt(hour) * 60 * 60000 + parseInt(minute) * 60000);
     },
     suggest() {
       this.$store.commit('updateTimestamp')
