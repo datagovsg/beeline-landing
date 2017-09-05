@@ -1,13 +1,19 @@
 <template>
   <div>
-    <Header />
+    <EditorHeader />
     <SearchBar />
     <nuxt/>
   </div>
 </template>
 <script>
 import {mapMutations} from 'vuex'
+import EditorHeader from '~/components/EditorHeader'
+import SearchBar from '~/components/SearchBar'
+
 export default {
+  components: {
+    EditorHeader, SearchBar,
+  },
   mounted () {
     this.updateWithResult({
       idToken: window.localStorage.idToken,

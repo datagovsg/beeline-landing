@@ -21,6 +21,11 @@ export default {
       link: [
         {rel: 'stylesheet', href: '/css/animate.css'},
         {rel: 'stylesheet', href: '/css/style.css'},
+        {
+          href: 'https://fonts.googleapis.com/css?family=Lato:400,300',
+          rel: 'stylesheet',
+          type: 'text/css'
+        }
       ],
       script: [
         // {src: 'js/wow.min.js'},

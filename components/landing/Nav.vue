@@ -14,13 +14,12 @@
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav navbar-right">
-            <nuxt-link tag="li" active-class="active"
-              to="/" target="_blank" :exact="true">
-              <a>Home</a>
-            </nuxt-link>
+            <li>
+              <a href="/">Home</a>
+            </li>
 
             <nuxt-link tag="li" active-class="active"
-              to="/routes" target="_blank">
+              to="/routes">
               <a>Routes</a>
             </nuxt-link>
 
