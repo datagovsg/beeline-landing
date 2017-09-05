@@ -17,11 +17,11 @@
             <li>
               <a href="/">Home</a>
             </li>
-
+<!-- 
             <nuxt-link tag="li" active-class="active"
               to="/routes">
               <a>Routes</a>
-            </nuxt-link>
+            </nuxt-link> -->
 
             <nuxt-link tag="li" active-class="active"
               to="/suggest.html" target="_blank">
