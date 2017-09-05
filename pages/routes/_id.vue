@@ -5,6 +5,7 @@
     <GmapMap class="stops-map" :center="mapCenter" :zoom="mapZoom">
       <GmapPolyline :path="pathFromString(route.path)" />
       <GmapMarker v-for="ts in route.trips[0].tripStops"
+        :key="ts.id"
         :position="{
           lat: ts.stop.coordinates.coordinates[1],
           lng: ts.stop.coordinates.coordinates[0],
@@ -31,8 +32,9 @@
       </thead>
       <tbody>
         <tr v-for="ts in route.trips[0].tripStops"
-            @click="selectStop(ts)"
-            :class="{active: selectedStop === ts}">
+          :key="ts.id"
+          @click="selectStop(ts)"
+          :class="{active: selectedStop === ts}">
           <td>{{dateformat(ts.time, 'HH:MM')}}</td>
           <td>{{ts.stop.description}}</td>
           <td>{{ts.canBoard ? "Boarding" : "" }}</td>
