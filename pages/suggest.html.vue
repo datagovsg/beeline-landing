@@ -151,28 +151,7 @@
               <option :value="dateformat(time, 'HH:MM', true)" v-for="time in group.times">
                 {{dateformat(time, 'h:MM TT', true)}}
               </option>
-              <!-- <option value="06:30">6:30 am</option>
-              <option value="07:00">7:00 am</option>
-              <option value="07:30">7:30 am</option>
-              <option value="08:00">8:00 am</option>
-              <option value="08:30">8:30 am</option>
-              <option value="09:00">9:00 am</option>
-              <option value="09:30">9:30 am</option>
-              <option value="10:00">10:00 am</option>
-              <option value="10:30">10:30 am</option> -->
             </optgroup>
-            <!-- <optgroup label="PM">
-              <option value="17:00">5:00 pm</option>
-              <option value="17:30">5:30 pm</option>
-              <option value="18:00">6:00 pm</option>
-              <option value="18:30">6:30 pm</option>
-              <option value="19:00">7:00 pm</option>
-              <option value="19:30">7:30 pm</option>
-              <option value="20:00">8:00 pm</option>
-              <option value="20:30">8:30 pm</option>
-              <option value="21:00">9:00 pm</option>
-              <option value="21:30">9:30 pm</option>
-            </optgroup> -->
           </select>
           <!-- </my-validate> -->
           <transition name="expand">
@@ -492,6 +471,14 @@ export default {
     })
   },
   mounted() {
+    // Set up bootstrap
+    window.jQuery = $
+    require('bootstrap')
+
+    // Set up hash
+    updateHash(this)
+
+    //
     const {default: Auth0Lock} = require('auth0-lock')
     this.lock = new Auth0Lock(
       'PwDT8IepW58tRCqZlLQkFKxKpuYrgNAp',
@@ -559,9 +546,9 @@ export default {
         $('#submitted-dialog').modal('show')
           .on('hidden.bs.modal', () => {
             if (this.emailVerification) {
-              window.location.href = `suggestSubmitted.html#${hash}`
+              window.location.href = `/suggestSubmitted.html#${hash}`
             } else {
-              window.location.href = `suggestVerify.html#${hash}`
+              window.location.href = `/suggestVerify.html#${hash}`
             }
           })
 
@@ -735,4 +722,32 @@ export default {
     }
   }
 }
+
+function updateHash (vue) {
+  var hash = window.location.hash;
+  if (!hash) return;
+  hash = hash.substr(1);
+  hash = querystring.parse(hash);
+
+  VueGoogleMaps.loaded.then(() => {
+    if (hash.originLat && hash.originLng) {
+      vue.setAndGeocodeLocation('origin', new google.maps.LatLng({
+        lat: parseFloat(hash.originLat),
+        lng: parseFloat(hash.originLng)
+      }))
+    }
+
+    if (hash.destinationLat && hash.destinationLng) {
+      vue.setAndGeocodeLocation('destination', new google.maps.LatLng({
+        lat: parseFloat(hash.destinationLat),
+        lng: parseFloat(hash.destinationLng)
+      }))
+    }
+  });
+
+  if(hash.referrer) {
+    vue.setReferrer(hash.referrer)
+  }
+}
+
 </script>
