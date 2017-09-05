@@ -36,6 +36,8 @@ module.exports = {
     }
   },
   plugins: [
-    '~/plugins/loadComponents.js'
+    '~/plugins/loadComponents.js',
+    '~/plugins/googleMaps.js',
+    '~/plugins/suggest.js',
   ]
 }

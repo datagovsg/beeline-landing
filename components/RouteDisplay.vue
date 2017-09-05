@@ -7,6 +7,7 @@
     <div class="route-details">
       <div><b>From</b> {{route.from}}</div>
       <div><b>To</b> {{route.to}}</div>
+      ${{route.trips[0].price}}
     </div>
     <div class="extra">
       <i class="mdi mdi-dots-vertical"></i>

@@ -1,0 +1,738 @@
+<template>
+  <form class="container suggest" @submit="submit" v-cloak id="submit-form">
+    <h1 class="heading">Suggest a new route</h1>
+    <div class="row">
+
+      <!-- map start -->
+      <div class="col-lg-7 col-md-6 col-sm-12 col-xs-12">
+        <gmap-map :center="center" :zoom="zoom"
+            class="gmap"
+            @click="click" ref="map" :options="mapSettings.defaultMapOptions">
+          <gmap-marker v-if="suggestion.origin" :position="suggestion.origin" label="S">
+          </gmap-marker>
+          <gmap-marker v-if="suggestion.destination" :position="suggestion.destination" label="E">
+          </gmap-marker>
+          <gmap-polyline v-if="path" :path="path">
+          </gmap-polyline>
+          <similar-requests :requests="similarRequests.requests"
+            @hovered-on="similarRequests.hoveredRequest = $event">
+          </similar-requests>
+
+          <div slot="visible">
+            <div class="map-status-bar" v-show="similarRequests.hoveredRequest">
+              <template v-if="similarRequests.hoveredRequest">
+                {{similarRequests.hoveredRequest.email || '(anonymous)'}}
+              </template>
+            </div>
+          </div>
+        </gmap-map>
+      </div>
+      <!-- map ends -->
+
+      <!-- form start -->
+      <div class="col-lg-5 col-md-6 col-sm-12 col-xs-12">
+        <div class="form-group">
+          <label class="control-label" for="start-address">
+            Start address
+          </label>
+          <my-validate
+            :validate-value="suggestion.origin"
+            :validate-rule="validLatLng"
+            @validation-changed="validation.originValid = $event"
+            :required="true"
+          >
+            <gmap-autocomplete type="text"
+              placeholder="Street, Postal code, Building name, etc."
+              class="form-control address-autocomplete"
+              id="start-address"
+              :value="suggestion.originText"
+              :component-restrictions="{country: 'SG'}"
+              @focus.native="focusIn('origin')"
+              @place_changed="updatePlace"
+              v-focus-placeholder
+              data-focus-placeholder="Click on the map, or type the name of the place.">
+            </gmap-autocomplete>
+          </my-validate>
+          <transition name="expand" css appear>
+            <div class="alert alert-info" v-show="validation.originValid && validation.originValid.touched && !validation.originValid.valid">
+              <i class="fa fa-info-circle"></i>
+              <span class="small">Please enter a valid Singapore address.</span>
+            </div>
+          </transition>
+        </div>
+
+        <div class="form-group">
+          <label class="control-label" for="end-address">
+            End address
+          </label>
+          <my-validate
+            :validate-value="suggestion.destination"
+            :validate-rule="validLatLng"
+            @validation-changed="validation.destinationValid = $event"
+            :required="true"
+          >
+            <gmap-autocomplete type="text"
+              id="end-address"
+              placeholder="Street, Postal code, Building name, etc."
+              class="form-control address-autocomplete"
+              :value="suggestion.destinationText"
+              @focus.native="focusIn('destination')"
+              @place_changed="updatePlace"
+              :component-restrictions="{country: 'SG'}"
+              v-focus-placeholder
+              data-focus-placeholder="Click on the map, or type the name of the place.">
+            </gmap-autocomplete>
+          </my-validate>
+          <transition name="expand">
+            <div class="alert alert-info" v-show="validation.destinationValid && validation.destinationValid.touched && !validation.destinationValid.valid">
+              <i class="fa fa-info-circle"></i> <span class="small">Please enter a valid Singapore address.</span>
+            </div>
+          </transition>
+        </div>
+
+        <div class="form-group"
+             v-if="suggestion.origin && suggestion.destination"
+             v-show="runningRoutes.length > 0">
+          {{runningRoutes.length}} routes running nearby! Book now!
+          <p class="small" v-for="route in runningRoutes">
+            <a target="new"
+               :href="'https://app.beeline.sg/#/tabs/booking/'+route.id+'/stops'">
+              ({{departureTimeFor(route)}}) {{route.from}}<br/>
+              ({{arrivalTimeFor(route)}}) {{route.to}}<br/>
+            </a>
+          </p>
+        </div>
+
+        <div class="form-group"
+             v-if="suggestion.origin && suggestion.destination"
+             v-show="crowdstartedRoutes.length > 0">
+          {{crowdstartedRoutes.length}} routes similar to your suggestion are being crowdstarted!
+          <p class="small" v-for="route in crowdstartedRoutes">
+            <a target="new"
+               :href="'https://app.beeline.sg/#/tabs/crowdstart/'+route.id+'/detail'">
+              ({{departureTimeFor(route)}}) {{route.from}}<br/>
+              ({{arrivalTimeFor(route)}}) {{route.to}}<br/>
+            </a>
+          </p>
+
+          <p>A route will go live once enough people back it!</p>
+        </div>
+
+        <div class="form-group" v-if="suggestion.origin && suggestion.destination">
+          There are {{similarRequests.requests.length}} suggestion(s) similar to yours.
+
+          <transition name="expand">
+            <div v-show="similarRequests.requests.length > 0">
+              <requests-time-histogram :requests="similarRequests.requests"
+                :width="320" :height="320">
+              </requests-time-histogram>
+            </div>
+          </transition>
+
+          <!-- <p>(Hint: once there are 15 similar suggestions, we can begin to
+          crowdstart a route!)</p> -->
+        </div>
+
+        <div class="form-group">
+          <label class="control-label" for="arrival-time">
+            Time at Destination
+          </label>
+          <!-- workaround for weird bug where the <select> option has
+              to be selected twice -->
+          <!-- <my-validate
+            :required="true"
+            @validation-changed="validation.time = $event"
+          > -->
+          <select id="arrival-time"
+            class="form-control" v-model="arrivalTime"
+            @focus="(validation.time.touched = true) && zoomOut()">
+            <option disabled value="">Arrival Time at Destination</option>
+            <optgroup v-for="group in TimeGroups" :label="group.label">
+              <option :value="dateformat(time, 'HH:MM', true)" v-for="time in group.times">
+                {{dateformat(time, 'h:MM TT', true)}}
+              </option>
+              <!-- <option value="06:30">6:30 am</option>
+              <option value="07:00">7:00 am</option>
+              <option value="07:30">7:30 am</option>
+              <option value="08:00">8:00 am</option>
+              <option value="08:30">8:30 am</option>
+              <option value="09:00">9:00 am</option>
+              <option value="09:30">9:30 am</option>
+              <option value="10:00">10:00 am</option>
+              <option value="10:30">10:30 am</option> -->
+            </optgroup>
+            <!-- <optgroup label="PM">
+              <option value="17:00">5:00 pm</option>
+              <option value="17:30">5:30 pm</option>
+              <option value="18:00">6:00 pm</option>
+              <option value="18:30">6:30 pm</option>
+              <option value="19:00">7:00 pm</option>
+              <option value="19:30">7:30 pm</option>
+              <option value="20:00">8:00 pm</option>
+              <option value="20:30">8:30 pm</option>
+              <option value="21:00">9:00 pm</option>
+              <option value="21:30">9:30 pm</option>
+            </optgroup> -->
+          </select>
+          <!-- </my-validate> -->
+          <transition name="expand">
+            <!-- <div class="alert alert-info" v-show="validation.time && validation.time.touched && !validation.time.valid"> -->
+            <div class="alert alert-info" v-show="validation.time.touched && !arrivalTime">
+              <i class="fa fa-info-circle"></i>
+              <span class="small">
+                Please select the time you want to arrive at your destination.
+              </span>
+            </div>
+          </transition>
+        </div>
+
+        <div class="form-group">
+          <div>
+            <label class="small">
+              <my-validate
+                :required="true"
+                @validation-changed="validation.agreeTerms = $event"
+              >
+                <input type="checkbox" v-model="agreeTerms">
+              </my-validate>
+              Yes, I read and agree to Beeline's <a class="btn-link" href="privacy_policy.html" target="_blank">Privacy Policy</a> and <a class="btn-link" href="terms_of_use.html" target="_blank">Terms of use</a>.
+            </label>
+          </div>
+          <transition name="expand" css appear>
+            <div class="alert alert-info" v-show="validation.agreeTerms && !validation.agreeTerms.valid">
+              <i class="fa fa-info-circle"></i> <span class="small"> Please read and agree to the terms if you want to submit a route suggestions.</span>
+            </div>
+          </transition>
+        </div>
+        <hr class="suggest">
+        <div class="form-group">
+          <label>
+            <p class="small robot">
+              To make sure you are not a robot, please verify with one of the following methods:
+            </p>
+          </label>
+          <div class="text-center">
+            <button class="btn btn-default verify" @click="login" type="button">
+              Connect with
+              <br /><span class="fa-stack">
+<i class="fa fa-circle fa-stack-2x circleFb"></i>
+<i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+</span> or <span class="fa-stack">
+<i class="fa fa-circle fa-stack-2x circleGoogle"></i>
+<i class="fa fa-google-plus fa-stack-1x fa-inverse"></i>
+</span>
+            </button>
+            <span class="choice"> or </span>
+            <button class="btn btn-default verify" @click="showEmail" type="button">
+              Enter my email
+            </button>
+          </div>
+
+        </div>
+
+        <transition name="expand">
+          <div class="form-group" v-show="noVerification || emailVerification">
+            <label>
+              Email Address
+            </label>
+
+            <my-validate
+              :required="true"
+              :validate-rule="isEmail"
+              @validation-changed="validation.email = $event"
+            >
+              <input type="email" class="form-control" v-model="email"
+              placeholder="Your Email Address" :disabled="emailVerification">
+            </my-validate>
+            <transition name="expand">
+              <div class="alert alert-info" v-show="validation.email && validation.email.touched && !validation.email.valid">
+                <i class="fa fa-info-circle"></i>
+                <span class="small">Please enter a valid email address.</span>
+              </div>
+            </transition>
+          </div>
+        </transition>
+        <div class="text-center">
+          <button type="submit" class="btn btn-primary btn-lg submit" :disabled="!formValid">
+            Submit Route Suggestion
+          </button>
+        </div>
+        <!-- END: Authentication providers -->
+      </div>
+    </div>
+
+    <div class="modal fade" tabindex="-1" role="dialog" id="submitted-dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">Suggestion submitted</h4>
+          </div>
+          <div class="modal-body">
+            <p v-if="emailVerification">
+              Thank you. Your suggestion has been submitted!
+            </p>
+            <p v-else>
+              Thank you. Your suggestion has been received! We will add it to our suggestions database once you have verified your email address. Please check your email inbox for further instructions.
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">
+              Continue
+            </button>
+          </div>
+        </div>
+        <!-- /.modal-content -->
+      </div>
+      <!-- /.modal-dialog -->
+    </div>
+    <!-- /.modal -->
+
+    <div class="modal fade" tabindex="-1" role="dialog" id="submitted-error-dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+            <h4 class="modal-title">Error submitting suggestion</h4>
+          </div>
+          <div class="modal-body">
+            <p>Sorry, there was a server error. Please try again later.</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">
+              Back
+            </button>
+          </div>
+        </div>
+        <!-- /.modal-content -->
+      </div>
+      <!-- /.modal-dialog -->
+    </div>
+    <!-- /.modal -->
+  </form>
+</template>
+
+<style>
+label.control-label {
+  display: block;
+}
+</style>
+
+<script>
+import SimilarRequests from '~/components/suggest/SimilarRequests'
+import RequestsTimeHistogram from '~/components/suggest/RequestsTimeHistogram'
+import MyValidate from '~/components/suggest/MyValidate'
+import MapSettings from '~/components/suggest/MapSettings'
+import _ from 'lodash'
+import querystring from 'querystring'
+import axios from 'axios'
+import * as VueGoogleMaps from '~/node_modules/vue2-google-maps'
+import $ from 'jquery'
+import dateformat from 'dateformat'
+import {isWithinReach} from '~/components/suggest/latlngDistance'
+
+const INIT = {
+  zoom: 11,
+  center: {lat: 1.38, lng: 103.8}
+}
+
+const allCrowdstartedRoutes = axios.get('https://api.beeline.sg/crowdstart/status')
+ .then(r => r.data)
+ .then(rs => {
+   for (let route of rs) {
+     for (let trip of route.trips) {
+       trip.tripStops = _.sortBy(trip.tripStops, 'time')
+     }
+   }
+   rs.trips = _.sortBy(rs.trips, 'date')
+   return rs
+ })
+
+export default {
+  layout: 'landing',
+  components: {
+    RequestsTimeHistogram,
+    SimilarRequests,
+    MyValidate,
+  },
+  data() {
+    return {
+      Singapore: {
+        south: 1.199038,
+        west: 103.591472,
+        north: 1.522356,
+        east: 104.047404
+      },
+      TimeGroups: [
+        {
+          label: 'AM',
+          times: [
+            6.5 * 3600e3,
+            7.0 * 3600e3,
+            7.5 * 3600e3,
+            8.0 * 3600e3,
+            8.5 * 3600e3,
+            9.0 * 3600e3,
+            9.5 * 3600e3,
+            10.0 * 3600e3,
+            10.5 * 3600e3,
+          ],
+        },
+        {
+          label: 'PM',
+          times: [
+            17.0 * 3600e3,
+            17.5 * 3600e3,
+            18.0 * 3600e3,
+            18.5 * 3600e3,
+            19.0 * 3600e3,
+            19.5 * 3600e3,
+            20.0 * 3600e3,
+            20.5 * 3600e3,
+            21.0 * 3600e3,
+            21.5 * 3600e3,
+          ]
+        }
+      ],
+      maxDistance: 1000,
+      center: INIT.center,
+      zoom: INIT.zoom,
+      suggestion: {
+        origin: null,
+        originPlace: undefined,
+        destination: null,
+        destinationPlace: undefined,
+        originText: '',
+        destinationText: '',
+        referrer: null
+      },
+      arrivalTime: '',
+      emailVerification: null,
+      email: '',
+      noVerification: false,
+      agreeTerms: false,
+      focusAt: null,
+      lock: null,
+      mapSettings: MapSettings,
+      similarRequests: {
+        requests: [],
+        hoveredRequest: null,
+      },
+      runningRoutes: [],
+      crowdstartedRoutes: [],
+      validation: {
+        originValid: null,
+        destinationValid: null,
+        time: {
+          touched: false,
+          valid: false,
+        },
+        agreeTerms: null,
+        email: null,
+      },
+      isEmail(str) {
+        return /.+@.+\..+/i.test(str)
+      }
+    }
+  },
+  computed: {
+    formValid() {
+      return _.every([
+        this.suggestion.origin,
+        this.suggestion.destination,
+        this.email,
+        this.arrivalTime,
+        this.agreeTerms
+      ])
+    },
+    path() {
+      if (_.get(this.suggestion, 'origin') &&
+          _.get(this.suggestion, 'destination')) {
+        return [
+          this.suggestion.origin,
+          this.suggestion.destination
+        ]
+      }
+      return false
+    }
+  },
+  watch: {
+    'suggestion.originPlace'(place) {
+      if (place && place.geometry) {
+        this.suggestion.origin = place.geometry.location
+        this.zoomIn(this.suggestion.origin)
+      } else {
+        console.log(place)
+      }
+    },
+    'suggestion.destinationPlace'(place) {
+      if (place && place.geometry) {
+        this.suggestion.destination = place.geometry.location
+        this.zoomIn(this.suggestion.destination)
+      } else {
+        console.log(place)
+      }
+    },
+    'suggestion.origin'() {
+      this.updateHash()
+      this.updateSimilarRequests()
+      this.updateRunningRoutes()
+      this.updateCrowdstartedRoutes()
+    },
+    'suggestion.destination'() {
+      this.updateHash()
+      this.updateSimilarRequests()
+      this.updateRunningRoutes()
+      this.updateCrowdstartedRoutes()
+    },
+  },
+  created() {
+    this.geocoderPromise = VueGoogleMaps.loaded.then(() => {
+      return new google.maps.Geocoder()
+    })
+  },
+  mounted() {
+    const {default: Auth0Lock} = require('auth0-lock')
+    this.lock = new Auth0Lock(
+      'PwDT8IepW58tRCqZlLQkFKxKpuYrgNAp',
+      'beeline-suggestions.auth0.com',
+      {
+        auth: {
+          redirect: false,
+          params: {
+            scope: 'openid name email'
+          }
+        },
+        languageDictionary: {
+          title: 'Beeline Suggestions'
+        },
+        theme: {
+          logo: 'https://datagovsg.github.io/beeline-landing/images/beelineAuth0.png'
+        },
+        autoclose: true,
+      }
+    )
+    this.lock.on('authenticated', (authResult) => {
+      this.lock.getProfile(authResult.idToken, (error, profile) => {
+        if (error) {
+          alert('Your email could not be verified')
+          return
+        }
+
+        this.email = profile.email
+        this.emailVerification = {
+          type: 'auth0',
+          data: authResult.idToken,
+        }
+      })
+    })
+  },
+  methods: {
+    dateformat,
+    submit(event) {
+      /* eslint-disable */
+      event.preventDefault()
+
+      // compute time as seconds past midnight
+      var splitTime = this.arrivalTime.split(':')
+      var time = splitTime[0] * 3600000 + splitTime[1] * 60000
+
+      var suggestionData = {
+        time: time,
+        boardLat: this.suggestion.origin.lat(),
+        boardLon: this.suggestion.origin.lng(),
+        alightLat: this.suggestion.destination.lat(),
+        alightLon: this.suggestion.destination.lng(),
+        email: this.email,
+        emailVerification: this.emailVerification
+      }
+      if (this.suggestion.referrer) {
+        _.assign(suggestionData, {
+          referrer: this.suggestion.referrer
+        })
+      }
+
+      axios.post('https://api.beeline.sg/suggestions/web', suggestionData)
+      .then((success) => {
+        const hash = this.getHash()
+
+        $('#submitted-dialog').modal('show')
+          .on('hidden.bs.modal', () => {
+            if (this.emailVerification) {
+              window.location.href = `suggestSubmitted.html#${hash}`
+            } else {
+              window.location.href = `suggestVerify.html#${hash}`
+            }
+          })
+
+        this.time = null
+        this.suggestion = {
+          origin: null,
+          destination: null,
+          originPlace: null,
+          destinationPlace: null,
+          referrer: null
+        }
+      }, (error) => {
+        $('#submitted-error-dialog').modal('show')
+      })
+    },
+    updateSimilarRequests() {
+      if (this.suggestion.origin && this.suggestion.destination) {
+        axios.get('https://api.beeline.sg/suggestions/web/similar?' + querystring.stringify({
+          startLat: this.suggestion.origin.lat(),
+          startLng: this.suggestion.origin.lng(),
+          endLat: this.suggestion.destination.lat(),
+          endLng: this.suggestion.destination.lng(),
+          startDistance: this.maxDistance,
+          endDistance: this.maxDistance,
+        }))
+        .then(r => r.data)
+        .then(s => this.similarRequests.requests = s)
+        .catch(err => console.error(err))
+      }
+    },
+    updateRunningRoutes() {
+      if (this.suggestion.origin && this.suggestion.destination) {
+        axios.get('https://api.beeline.sg/routes/search_by_latlon?' + querystring.stringify({
+          startLat: this.suggestion.origin.lat(),
+          startLng: this.suggestion.origin.lng(),
+          endLat: this.suggestion.destination.lat(),
+          endLng: this.suggestion.destination.lng(),
+          maxDistance: this.maxDistance,
+          tags: JSON.stringify(['public']),
+        }))
+        .then(r => r.data)
+        .then(rs => {
+          for (let route of rs) {
+            for (let trip of route.trips) {
+              trip.tripStops = _.sortBy(trip.tripStops, 'time')
+            }
+          }
+          rs.trips = _.sortBy(rs.trips, 'date')
+          this.runningRoutes = rs
+        })
+        .catch(err => console.error(err))
+      }
+    },
+    updateCrowdstartedRoutes() {
+      const origin = this.suggestion.origin
+      const destination = this.suggestion.destination
+      if (origin && destination) {
+        allCrowdstartedRoutes.then(routes => routes.filter(route =>
+          _.some(
+            route.trips[0].tripStops,
+            ts => ts.canBoard && isWithinReach(ts, origin, this.maxDistance)
+          ) &&
+          _.some(
+            route.trips[0].tripStops,
+            ts => ts.canAlight && isWithinReach(ts, destination, this.maxDistance)
+          )
+        ))
+        .then(filteredRoutes => {
+          this.crowdstartedRoutes = filteredRoutes
+        })
+        .catch(err => console.error(err))
+      }
+    },
+    updateHash() {
+      window.location.hash = this.getHash()
+    },
+    getHash() {
+      return querystring.stringify(_.assign({},
+        this.suggestion.origin ? {
+          originLat: this.suggestion.origin.lat(),
+          originLng: this.suggestion.origin.lng(),
+        } : {},
+        this.suggestion.destination ? {
+          destinationLat: this.suggestion.destination.lat(),
+          destinationLng: this.suggestion.destination.lng(),
+        } : {}
+      ))
+    },
+    departureTimeFor(route) {
+      var tripStops = _.sortBy(route.trips[0].tripStops, ts => ts.time)
+      return dateformat(new Date(tripStops[0].time).getTime() - 8*3600e3, 'HH:MM', true)
+    },
+    arrivalTimeFor(route) {
+      var tripStops = _.sortBy(route.trips[0].tripStops, ts => ts.time)
+      return dateformat(new Date(tripStops[tripStops.length - 1].time).getTime() - 8*3600e3, 'HH:MM', true)
+    },
+    click(event) {
+      if (this.focusAt) {
+        this.setAndGeocodeLocation(this.focusAt, event.latLng)
+      }
+    },
+    setAndGeocodeLocation(focusAt, latLng) {
+      this.suggestion[focusAt] = latLng
+
+      // Reverse geocode...
+      this.geocoderPromise.then((geocoder) => {
+        geocoder.geocode({location: latLng}, (results, status) => {
+          if (status === google.maps.GeocoderStatus.OK) {
+            if (results[0]) {
+              this.$set(this.suggestion, `${focusAt}Text`,
+                        results[0].formatted_address)
+            }
+          }
+        })
+      })
+    },
+    zoomIn(where) {
+      this.center = where
+      this.zoom = 15
+    },
+    zoomOut() {
+      if (this.suggestion.origin && this.suggestion.destination) {
+        var bounds = new google.maps.LatLngBounds()
+        bounds.extend(this.suggestion.origin)
+        bounds.extend(this.suggestion.destination)
+        this.$refs.map.fitBounds(bounds)
+      }
+      else {
+        this.center = INIT.center
+        this.zoom = INIT.zoom
+      }
+    },
+    focusIn(which) {
+      this.focusAt = which
+    },
+    focusOut(which) {
+      if (this.focusAt === which) {
+        this.focusAt = null
+      }
+    },
+    login() {
+      this.lock.show({
+        responseType: 'token',
+      }, (error, profile, idToken) => {
+        if (error) {
+          alert("Your email could not be verified")
+          return
+        }
+
+        this.email = profile.email
+        this.emailVerification = {
+          type: 'auth0',
+          data: idToken,
+        }
+      })
+    },
+    validLatLng(latlng) {
+      return latlng &&
+          (latlng.lat() >= 1 && latlng.lat() <= 2) &&
+          (latlng.lng() >= 100 && latlng.lng() <= 105)
+    },
+    showEmail() {
+      this.emailVerification = null
+      this.noVerification = true
+    },
+    updatePlace(place) {
+      this.suggestion[this.focusAt] = place.geometry.location
+    },
+    setReferrer(referrer) {
+      this.suggestion.referrer = referrer
+    }
+  }
+}
+</script>

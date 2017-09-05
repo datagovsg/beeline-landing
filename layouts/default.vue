@@ -5,7 +5,20 @@
     <nuxt/>
   </div>
 </template>
-
+<script>
+import {mapMutations} from 'vuex'
+export default {
+  mounted () {
+    this.updateWithResult({
+      idToken: window.localStorage.idToken,
+      refreshToken: window.localStorage.refreshToken,
+    })
+  },
+  methods: {
+    ...mapMutations('login', ['updateWithResult']),
+  }
+}
+</script>
 <style>
 html
 {
