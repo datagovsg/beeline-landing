@@ -480,6 +480,10 @@ export default {
         ]
       }
       return false
+    },
+
+    requestOriginDestination () {
+      return [this.suggestion.origin, this.suggestion.destination]
     }
   },
   watch: {
@@ -499,13 +503,7 @@ export default {
         console.log(place)
       }
     },
-    'suggestion.origin'() {
-      this.updateHash()
-      this.updateSimilarRequests()
-      this.updateRunningRoutes()
-      this.updateCrowdstartedRoutes()
-    },
-    'suggestion.destination'() {
+    requestOriginDestination () {
       this.updateHash()
       this.updateSimilarRequests()
       this.updateRunningRoutes()
