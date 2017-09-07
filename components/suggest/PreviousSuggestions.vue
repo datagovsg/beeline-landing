@@ -68,6 +68,8 @@
 table {
   margin: 0 0 2em 0;
   width: 100%;
+  min-width: 500px; /* for mobile browsers */
+
   tr {
     border-bottom: solid 1px #CCC;
     cursor: pointer;
