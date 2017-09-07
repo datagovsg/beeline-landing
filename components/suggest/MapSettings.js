@@ -1,4 +1,4 @@
-import {loaded} from '~/node_modules/vue2-google-maps'
+import {loaded} from '~/node_modules/vue2-google-maps/src/main'
 import Vue from 'vue'
 
 export default new Vue({
