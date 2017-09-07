@@ -4,10 +4,11 @@
       <h1 class="title">
         Beeline Routes
       </h1>
-      
+
       <h3>Search for a Route</h3>
       <div class="search-area">
-        <input type="text" v-model="searchBuffer" placeholder="Postcode / Address / Route Name"
+        <input class="form-control"
+          type="text" v-model="searchBuffer" placeholder="Postcode / Address / Route Name"
           @input="updateFilters"/>
       </div>
 
@@ -17,8 +18,14 @@
           ({{filteredRoutes.public.length}})
         </template>
       </h2>
+
+      <UibPagination :value="page" :itemsPerPage="PAGE_SIZE"
+        :totalItems="filteredRoutes.public && filteredRoutes.public.length"
+        @input="goToPage($event)"
+        />
+
       <template v-if="filteredRoutes.public">
-        <route v-for="route in filteredRoutes.public" :route="route" :key="route.id"
+        <route v-for="route in filteredRoutes.public.slice((page) * PAGE_SIZE, (page + 1) * PAGE_SIZE)" :route="route" :key="route.id"
           :id="route.id">
           <div slot="link">
             <a :href="`https://app.beeline.sg/#/tabs/booking/${route.id}/stops`" slot="link"
@@ -87,6 +94,8 @@ import {throttle} from 'lodash'
 import {filter} from 'lodash/fp'
 import dateformat from 'dateformat'
 
+import UibPagination from '~/components/UibPagination'
+
 export default {
   layout: 'landing',
   asyncData () {
@@ -116,6 +125,7 @@ export default {
       now: new Date(),
       searchBuffer: '',
       searchFilter: '',
+      PAGE_SIZE: 20,
     }
   },
   computed: {
@@ -136,16 +146,29 @@ export default {
           crowdstart: filter(routeFilter, this.crowdstartRoutes),
         }
       }
+    },
+    page() {
+      return (this.$route.query.page || 1) - 1
     }
   },
   components: {
-    Route
+    Route, UibPagination
   },
   methods: {
     dateformat,
     updateFilters: throttle(function () {
       this.searchFilter = this.searchBuffer
-    }, 500, {leading: false, trailing: true})
+    }, 500, {leading: false, trailing: true}),
+    goToPage (p) {
+      console.log(p)
+      this.$router.push({
+        ...this.$route,
+        query: {
+          ...this.$route.query,
+          page: p + 1
+        }
+      })
+    }
   },
 }
 </script>

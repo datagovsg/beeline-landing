@@ -74,10 +74,13 @@
 
       .timings {
         flex: 1 1 auto;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
         text-align: center;
 
         .timing {
-          display: inline-block;
           width: 200px;
           .location {
             font-size: 20px;
