@@ -190,7 +190,7 @@
           <!-- </my-validate> -->
           <transition name="expand">
             <!-- <div class="alert alert-info" v-show="validation.time && validation.time.touched && !validation.time.valid"> -->
-            <div class="alert alert-info" v-show="validation.time.touched && !arrivalTime">
+            <div class="alert alert-info" v-show="!arrivalTime">
               <i class="fa fa-info-circle"></i>
               <span class="small">
                 Please select the time you want to arrive at your destination.
