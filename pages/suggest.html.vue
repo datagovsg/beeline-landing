@@ -219,26 +219,10 @@
         </div>
         <hr class="suggest">
         <div class="form-group" v-if="!email">
-          <label>
-            <p class="small robot">
-              To make sure you are not a robot, please verify with one of the following methods:
-            </p>
-          </label>
+          You need to verify your email in order to proceed.
           <div class="text-center">
-            <button class="btn btn-default verify" @click="login" type="button">
-              Connect with
-              <br />
-              <span class="fa-stack">
-                <i class="fa fa-circle fa-stack-2x circleFb"></i>
-                <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
-              </span> or <span class="fa-stack">
-                <i class="fa fa-circle fa-stack-2x circleGoogle"></i>
-                <i class="fa fa-google-plus fa-stack-1x fa-inverse"></i>
-              </span>
-            </button>
-            <span class="choice"> or </span>
-            <button class="btn btn-default verify" @click="showEmail" type="button">
-              Enter my email
+            <button class="btn btn-default" @click="login" type="button">
+              Verify my email
             </button>
           </div>
         </div>
@@ -267,10 +251,8 @@
         </transition>
 
         <div v-if="emailVerification">
-          You have verified your email.
-          <br/>
           <button class="btn btn-default" @click="emailVerification = null, email = null" type="button">
-            Verify another email
+            Use another email address
           </button>
         </div>
 
@@ -525,9 +507,7 @@ export default {
         // Refresh suggestions because user changed
         if (i) {
           this.refreshPreviousSuggestions()
-        }
-        // Update email
-        if (i) {
+
           try {
             this.email = jwtDecode(i).email
           } catch (err) {
@@ -542,7 +522,7 @@ export default {
       return new google.maps.Geocoder()
     })
   },
-  mounted() {
+  async mounted() {
     // Set up bootstrap
     window.jQuery = $
     require('bootstrap')
@@ -551,44 +531,24 @@ export default {
     updateHash(this)
 
     //
-    const {default: Auth0Lock} = require('auth0-lock')
-    this.lock = new Auth0Lock(
-      'PwDT8IepW58tRCqZlLQkFKxKpuYrgNAp',
-      'beeline-suggestions.auth0.com',
-      {
-        auth: {
-          redirect: false,
-          params: {
-            scope: 'openid name email'
-          }
-        },
-        languageDictionary: {
-          title: 'Beeline Suggestions'
-        },
-        theme: {
-          logo: 'https://datagovsg.github.io/beeline-landing/images/beelineAuth0.png'
-        },
-        autoclose: true,
-      }
-    )
-    this.lock.on('authenticated', (authResult) => {
-      this.lock.getProfile(authResult.idToken, (error, profile) => {
-        if (error) {
-          alert('Your email could not be verified')
-          return
-        }
+    // const {default: Auth0Lock} = require('auth0-lock')
+    const {default: Auth0LockPasswordless} = await import('auth0-lock-passwordless')
 
-        this.email = profile.email
-        this.emailVerification = {
-          type: 'auth0',
-          data: authResult.idToken,
-        }
-      })
+    this.lockPasswordless = window.lockPasswordless || new Auth0LockPasswordless(
+      'PwDT8IepW58tRCqZlLQkFKxKpuYrgNAp',
+      'beeline-suggestions.auth0.com'
+    )
+
+    this.$authHandler = ({profile, idToken, accessToken, state, refreshToken}) => {
+      this.emailVerification = {
+        type: 'auth0',
+        data: idToken,
+      }
 
       // Save the tokens to view suggestions
-      window.localStorage.idToken = authResult.idToken
-      window.localStorage.refreshToken = authResult.refreshToken
-    })
+      window.localStorage.idToken = idToken
+      window.localStorage.refreshToken = refreshToken
+    }
 
     if (window.localStorage.idToken) {
       // Test the auth
@@ -797,29 +757,38 @@ export default {
       }
     },
     login() {
-      this.lock.show({
+      debugger
+      this.lockPasswordless.socialOrEmailcode({
+        authParams: {
+          scope: 'openid profile email name offline_access',
+        },
+        dict: {
+          title: 'Beeline Suggestions',
+          networkOrEmail: {
+            smallSocialButtonsHeader: 'Connect using single sign-on (we will only receive your email address)',
+            separatorText: 'Or, verify your email using a one-time password.',
+            emailInputPlaceholder: "yours@example.com",
+          },
+        },
+        icon: 'https://datagovsg.github.io/beeline-landing/images/beelineAuth0.png',
+        connections: ['facebook', 'google-oauth2'],
+        autoclose: true,
+        popup: true,
         responseType: 'token',
-      }, (error, profile, idToken) => {
+      }, (error, profile, idToken, accessToken, state, refreshToken) => {
         if (error) {
+          // FIXME: use a soft dialog
           alert("Your email could not be verified")
           return
         }
 
-        this.email = profile.email
-        this.emailVerification = {
-          type: 'auth0',
-          data: idToken,
-        }
+        this.$authHandler({profile, idToken, accessToken, state, refreshToken})
       })
     },
     validLatLng(latlng) {
       return latlng &&
           (latlng.lat() >= 1 && latlng.lat() <= 2) &&
           (latlng.lng() >= 100 && latlng.lng() <= 105)
-    },
-    showEmail() {
-      this.emailVerification = null
-      this.noVerification = true
     },
     updatePlace(place) {
       this.suggestion[this.focusAt] = place.geometry.location
