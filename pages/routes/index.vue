@@ -25,20 +25,22 @@
         />
 
       <template v-if="filteredRoutes.public">
-        <route v-for="route in filteredRoutes.public.slice((page) * PAGE_SIZE, (page + 1) * PAGE_SIZE)" :route="route" :key="route.id"
-          :id="route.id">
-          <div slot="link">
-            <a :href="`https://app.beeline.sg/#/tabs/booking/${route.id}/stops`" slot="link"
-              class="price">
-              {{route.trips[0].price}}
-              »
-              <span style="font-size: 12px">
-                <br/>
-                Book now
-              </span>
-            </a>
-          </div>
-        </route>
+        <transition-group name="flip-list">
+          <route v-for="route in filteredRoutes.public.slice((page) * PAGE_SIZE, (page + 1) * PAGE_SIZE)"
+              :route="route" :key="route.id">
+            <div slot="link">
+              <a :href="`https://app.beeline.sg/#/tabs/booking/${route.id}/stops`" slot="link"
+                class="price">
+                {{route.trips[0].price}}
+                »
+                <span style="font-size: 12px">
+                  <br/>
+                  Book now
+                </span>
+              </a>
+            </div>
+          </route>
+        </transition-group>
       </template>
 
       <h2>
@@ -48,17 +50,19 @@
         </template>
       </h2>
       <template v-if="filteredRoutes.crowdstart">
-        <route v-for="route in filteredRoutes.crowdstart" :route="route" :key="route.id"
-          :id="route.id">
-          <a :href="`crowdstartRoutes/${route.id}`">
-            Details
-          </a>
-          <div slot="link">
-            <a :href="`https://app.beeline.sg/#/tabs/crowdstart/${route.id}/detail`">
-              Crowdstart Now!
+        <transition-group name="flip-list">
+          <route v-for="route in filteredRoutes.crowdstart" :route="route"
+            :key="route.id">
+            <a :href="`crowdstartRoutes/${route.id}`">
+              Details
             </a>
-          </div>
-        </route>
+            <div slot="link">
+              <a :href="`https://app.beeline.sg/#/tabs/crowdstart/${route.id}/detail`">
+                Crowdstart Now!
+              </a>
+            </div>
+          </route>
+        </transition-group>
       </template>
 
       <!-- <h2>Tracking Routes</h2>
@@ -84,51 +88,61 @@
     display: block;
   }
 }
+
+.flip-list-enter-active, .flip-list-leave-active {
+  transition: all 0.3s;
+}
+
+.flip-list-enter, .flip-list-leave-to {
+  opacity: 0;
+  transform: scaleY(0);
+}
+.flip-list-enter-to, .flip-list-leave {
+  opacity: 1.0;
+  transform: scaleY(1.0);
+}
+
 </style>
 
 <script>
-import querystring from 'querystring'
 import Route from '~/components/Route.vue'
-import axios from 'axios'
 import {throttle} from 'lodash'
 import {filter} from 'lodash/fp'
 import dateformat from 'dateformat'
+import {mapState, mapActions} from 'vuex'
 
 import UibPagination from '~/components/UibPagination'
 
 export default {
   layout: 'landing',
-  asyncData () {
-    const publicRoutesPromise = axios.get('https://api.beeline.sg/routes?' + querystring.stringify({
-      start_date: new Date().toISOString(),
-      include_trips: true,
-      tags: JSON.stringify(['public']),
-    }))
-    const crowdstartRoutesPromise = axios.get('https://api.beeline.sg/routes?' + querystring.stringify({
-      start_date: new Date().toISOString(),
-      include_trips: true,
-      tags: JSON.stringify(['crowdstart']),
-    }))
-    const crowdstartPromise = axios.get('https://api.beeline.sg/crowdstart/status')
-
-    return Promise.all([publicRoutesPromise, crowdstartRoutesPromise, crowdstartPromise])
-    .then(([publicRoutesResponse, crowdstartRoutesResponse, crowdstartStatusResponse]) => {
-      return {
-        publicRoutes: publicRoutesResponse.data,
-        crowdstartRoutes: crowdstartRoutesResponse.data,
-        // crowdstartStatus: crowdstartStatusResponse.data,
-      }
-    })
-  },
   data () {
     return {
       now: new Date(),
+      page: null,
       searchBuffer: '',
       searchFilter: '',
-      PAGE_SIZE: 20,
+      PAGE_SIZE: 10,
+    }
+  },
+  created () {
+    this.fetch(['publicRoutes', 'crowdstartRoutes', 'crowdstartStatus'])
+  },
+  watch: {
+    '$route.query.search': {
+      immediate: true,
+      handler () {
+        this.searchBuffer = this.searchFilter = this.$route.query.search || ''
+      }
+    },
+    '$route.query.page': {
+      immediate: true,
+      handler (p) {
+        this.page = p - 1
+      }
     }
   },
   computed: {
+    ...mapState('shared', ['publicRoutes', 'crowdstartRoutes', 'crowdstartStatus']),
     filteredRoutes () {
       if (!this.searchFilter) {
         return {
@@ -147,31 +161,28 @@ export default {
         }
       }
     },
-    page() {
-      return (this.$route.query.page || 1) - 1
-    }
   },
   components: {
     Route, UibPagination
   },
   methods: {
+    ...mapActions('shared', ['fetch']),
+
     dateformat,
     updateFilters: throttle(function () {
       this.searchFilter = this.searchBuffer
-    }, 500, {leading: false, trailing: true}),
+      this.page = 0
+    }, 200, {leading: false, trailing: true}),
     goToPage (p) {
-      console.log(p)
       this.$router.push({
         ...this.$route,
         query: {
           ...this.$route.query,
-          page: p + 1
+          page: p + 1,
+          search: this.searchFilter
         }
       })
     }
   },
 }
 </script>
-
-<style>
-</style>
