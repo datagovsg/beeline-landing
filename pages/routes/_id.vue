@@ -43,6 +43,8 @@
       </tbody>
     </table>
 
+    <PageDisqusThread />
+
   </section>
 </template>
 
@@ -66,6 +68,7 @@ import querystring from 'querystring'
 import Route from '~/components/Route.vue'
 import axios from 'axios'
 import dateformat from 'dateformat'
+import PageDisqusThread from '~/components/PageDisqusThread'
 
 export default {
   layout: 'landing',
@@ -100,7 +103,7 @@ export default {
     }
   },
   components: {
-    Route
+    Route, PageDisqusThread
   },
   methods: {
     pathFromString (s) {
