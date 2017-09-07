@@ -31,7 +31,7 @@
             <div slot="link">
               <a :href="`https://app.beeline.sg/#/tabs/booking/${route.id}/stops`" slot="link"
                 class="price">
-                {{route.trips[0].price}}
+                ${{route.trips[0].price}}
                 »
                 <span style="font-size: 12px">
                   <br/>
