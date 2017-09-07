@@ -70,6 +70,7 @@ table {
   width: 100%;
   tr {
     border-bottom: solid 1px #CCC;
+    cursor: pointer;
     &:hover {
       td {
         background-color: #DEF;

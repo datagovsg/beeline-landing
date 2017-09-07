@@ -218,7 +218,7 @@
           </transition>
         </div>
         <hr class="suggest">
-        <div class="form-group">
+        <div class="form-group" v-if="!email">
           <label>
             <p class="small robot">
               To make sure you are not a robot, please verify with one of the following methods:
@@ -227,20 +227,20 @@
           <div class="text-center">
             <button class="btn btn-default verify" @click="login" type="button">
               Connect with
-              <br /><span class="fa-stack">
-<i class="fa fa-circle fa-stack-2x circleFb"></i>
-<i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
-</span> or <span class="fa-stack">
-<i class="fa fa-circle fa-stack-2x circleGoogle"></i>
-<i class="fa fa-google-plus fa-stack-1x fa-inverse"></i>
-</span>
+              <br />
+              <span class="fa-stack">
+                <i class="fa fa-circle fa-stack-2x circleFb"></i>
+                <i class="fa fa-facebook fa-stack-1x fa-inverse"></i>
+              </span> or <span class="fa-stack">
+                <i class="fa fa-circle fa-stack-2x circleGoogle"></i>
+                <i class="fa fa-google-plus fa-stack-1x fa-inverse"></i>
+              </span>
             </button>
             <span class="choice"> or </span>
             <button class="btn btn-default verify" @click="showEmail" type="button">
               Enter my email
             </button>
           </div>
-
         </div>
 
         <transition name="expand">
@@ -265,6 +265,15 @@
             </transition>
           </div>
         </transition>
+
+        <div v-if="emailVerification">
+          You have verified your email.
+          <br/>
+          <button class="btn btn-default" @click="emailVerification = null, email = null" type="button">
+            Verify another email
+          </button>
+        </div>
+
         <div class="text-center">
           <button type="submit" class="btn btn-primary btn-lg submit" :disabled="!formValid">
             Submit Route Suggestion
@@ -344,6 +353,7 @@ import axios from 'axios'
 import * as VueGoogleMaps from '~/node_modules/vue2-google-maps'
 import $ from 'jquery'
 import dateformat from 'dateformat'
+import jwtDecode from 'jwt-decode'
 import {isWithinReach} from '~/components/suggest/latlngDistance'
 
 const INIT = {
@@ -512,8 +522,17 @@ export default {
     'emailVerification.data': {
       immediate: true,
       handler (i) {
+        // Refresh suggestions because user changed
         if (i) {
           this.refreshPreviousSuggestions()
+        }
+        // Update email
+        if (i) {
+          try {
+            this.email = jwtDecode(i).email
+          } catch (err) {
+            this.email = null
+          }
         }
       }
     },
