@@ -1,5 +1,5 @@
 <template>
-  <form class="container suggest" @submit="submit" v-cloak id="submit-form">
+  <form class="container suggest" @submit.prevent="submit" v-cloak id="submit-form">
     <div class="row">
       <h1 class="heading">Suggest a new route</h1>
 
@@ -594,8 +594,6 @@ export default {
     dateformat,
     submit(event) {
       /* eslint-disable */
-      event.preventDefault()
-
       // compute time as seconds past midnight
       var splitTime = this.arrivalTime.split(':')
       var time = splitTime[0] * 3600e3 + splitTime[1] * 60e3
@@ -617,6 +615,8 @@ export default {
 
       axios.post('https://api.beeline.sg/suggestions/web', suggestionData)
       .then((success) => {
+        this.refreshPreviousSuggestions()
+
         const hash = this.getHash()
 
         $('#submitted-dialog').modal('show')
@@ -624,7 +624,6 @@ export default {
             if (this.emailVerification) {
               // No need to redirect... just reload the suggestions
               // window.location.href = `/suggestSubmitted.html#${hash}`
-              this.refreshPreviousSuggestions
             } else {
               window.location.href = `/suggestVerify.html#${hash}`
             }
