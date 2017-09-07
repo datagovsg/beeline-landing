@@ -10,7 +10,7 @@ module.exports = {
       { hid: 'description', name: 'description', content: 'Beeline.sg - Singapore\'s marketplace for crowdsourced bus services' },
     ],
     link: [
-      { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
+      { rel: 'icon', type: 'image/x-icon', href: '/images/favicon.ico' }
     ]
   },
   /*
