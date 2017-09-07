@@ -73,6 +73,18 @@ import PageDisqusThread from '~/components/PageDisqusThread'
 export default {
   layout: 'landing',
   props: ['id'],
+  head () {
+// https://moz.com/blog/meta-data-templates-123
+    return {
+      meta: [
+        {property: 'og:title', content: `Beeline Route -- ${this.route.label}`},
+        {property: 'og:type', content: 'article'},
+        {property: 'og:url', content: `https://www.beeline.sg${this.$route.fullPath}`},
+        {property: 'og:image', content: 'https://www.beeline.sg/images/feature_mainBeeline.png'},
+        {property: 'og:description', content: `Shuttle bus from ${this.route.from} to ${this.route.to}`},
+      ]
+    }
+  },
   asyncData ({params, error}) {
     const routeFuturePromise = axios.get(`https://api.beeline.sg/routes/${params.id}?` + querystring.stringify({
       start_date: new Date().toISOString(),
