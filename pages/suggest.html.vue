@@ -364,6 +364,17 @@ export default {
     PreviousSuggestions,
     CurvedOD
   },
+  head () {
+    return {
+      meta: [
+        {property: 'og:title', content: `Beeline.sg -- Suggest a Route`},
+        {property: 'og:type', content: 'article'},
+        {property: 'og:url', content: `https://www.beeline.sg${this.$route.fullPath}`},
+        {property: 'og:image', content: 'https://www.beeline.sg/images/feature_mainBeeline.png'},
+        {property: 'og:description', content: `You suggest, we crowdstart`},
+      ]
+    }
+  },
   data() {
     return {
       Singapore: {
