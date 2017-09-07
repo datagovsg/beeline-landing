@@ -1,7 +1,16 @@
 <template>
   <form class="container suggest" @submit="submit" v-cloak id="submit-form">
-    <h1 class="heading">Suggest a new route</h1>
     <div class="row">
+      <h1 class="heading">Suggest a new route</h1>
+
+      <!-- hmm... using events to pass data out? good idea? -->
+      <PreviousSuggestions v-if="emailVerification"
+          :token="emailVerification.data"
+          :suggestions="suggestions"
+          @refresh_required="refreshPreviousSuggestions"
+          @hover_suggestion="suggestionsDisplay.hover = $event"
+          @click_suggestion="suggestionsDisplay.selected = $event; panToSuggestion($event)"
+          />
 
       <!-- map start -->
       <div class="col-lg-7 col-md-6 col-sm-12 col-xs-12">
@@ -17,6 +26,31 @@
           <similar-requests :requests="similarRequests.requests"
             @hovered-on="similarRequests.hoveredRequest = $event">
           </similar-requests>
+
+          <CurvedOD v-for="suggestion in suggestions"
+            :key="suggestion.id"
+            :start="{lat: suggestion.board.coordinates[1], lng: suggestion.board.coordinates[0]}"
+            :end="{lat: suggestion.alight.coordinates[1], lng: suggestion.alight.coordinates[0]}"
+            :options="{strokeColor: '#4b3863', strokeWeight: 1.5}"
+            />
+          <CurvedOD v-if="suggestionsDisplay.hover"
+            :start="{lat: suggestionsDisplay.hover.board.coordinates[1], lng: suggestionsDisplay.hover.board.coordinates[0]}"
+            :end="{lat: suggestionsDisplay.hover.alight.coordinates[1], lng: suggestionsDisplay.hover.alight.coordinates[0]}"
+            :options="{strokeColor: '#4b3863', strokeWeight: 5}"
+            />
+          <CurvedOD v-if="suggestionsDisplay.selected"
+            :start="{lat: suggestionsDisplay.selected.board.coordinates[1], lng: suggestionsDisplay.selected.board.coordinates[0]}"
+            :end="{lat: suggestionsDisplay.selected.alight.coordinates[1], lng: suggestionsDisplay.selected.alight.coordinates[0]}"
+            :options="{strokeColor: '#FF3863', strokeWeight: 5, zIndex: 10}"
+            />
+          <gmap-marker v-if="suggestionsDisplay.selected"
+            :position="{lat: suggestionsDisplay.selected.board.coordinates[1], lng: suggestionsDisplay.selected.board.coordinates[0]}"
+            label="S">
+          </gmap-marker>
+          <gmap-marker v-if="suggestionsDisplay.selected"
+            :position="{lat: suggestionsDisplay.selected.alight.coordinates[1], lng: suggestionsDisplay.selected.alight.coordinates[0]}"
+            label="E">
+          </gmap-marker>
 
           <div slot="visible">
             <div class="map-status-bar" v-show="similarRequests.hoveredRequest">
@@ -300,6 +334,8 @@ label.control-label {
 <script>
 import SimilarRequests from '~/components/suggest/SimilarRequests'
 import RequestsTimeHistogram from '~/components/suggest/RequestsTimeHistogram'
+import PreviousSuggestions from '~/components/suggest/PreviousSuggestions'
+import CurvedOD from '~/components/suggest/CurvedOD'
 import MyValidate from '~/components/suggest/MyValidate'
 import MapSettings from '~/components/suggest/MapSettings'
 import _ from 'lodash'
@@ -333,6 +369,8 @@ export default {
     RequestsTimeHistogram,
     SimilarRequests,
     MyValidate,
+    PreviousSuggestions,
+    CurvedOD
   },
   data() {
     return {
@@ -411,6 +449,12 @@ export default {
       },
       isEmail(str) {
         return /.+@.+\..+/i.test(str)
+      },
+
+      suggestions: null,
+      suggestionsDisplay: {
+        hover: null,
+        selected: null,
       }
     }
   },
@@ -464,6 +508,15 @@ export default {
       this.updateRunningRoutes()
       this.updateCrowdstartedRoutes()
     },
+
+    'emailVerification.data': {
+      immediate: true,
+      handler (i) {
+        if (i) {
+          this.refreshPreviousSuggestions()
+        }
+      }
+    },
   },
   created() {
     this.geocoderPromise = VueGoogleMaps.loaded.then(() => {
@@ -512,7 +565,40 @@ export default {
           data: authResult.idToken,
         }
       })
+
+      // Save the tokens to view suggestions
+      window.localStorage.idToken = authResult.idToken
+      window.localStorage.refreshToken = authResult.refreshToken
     })
+
+    if (window.localStorage.idToken) {
+      // Test the auth
+      axios.get('https://api.beeline.sg/suggestions/web', {
+        headers: {authorization: `Bearer ${window.localStorage.idToken}`}
+      })
+      .then(() => {
+        this.emailVerification = {
+          type: 'auth0',
+          data: window.localStorage.idToken
+        }
+      })
+      .catch((err) => {
+        if (err.statusCode === 401 && window.localStorage.refreshToken) {
+          // FIXME: this isn't going to work unless we define Auth0 somewhere
+          const auth0 = null
+          auth0.refreshToken(window.localStorage.refreshToken, (err, delegationResult) => {
+            if (!err) return
+
+            this.emailVerification = {
+              type: 'auth0',
+              data: delegationResult.id_token
+            }
+          })
+        } else {
+          throw err
+        }
+      })
+    }
   },
   methods: {
     dateformat,
@@ -546,7 +632,9 @@ export default {
         $('#submitted-dialog').modal('show')
           .on('hidden.bs.modal', () => {
             if (this.emailVerification) {
-              window.location.href = `/suggestSubmitted.html#${hash}`
+              // No need to redirect... just reload the suggestions
+              // window.location.href = `/suggestSubmitted.html#${hash}`
+              this.refreshPreviousSuggestions
             } else {
               window.location.href = `/suggestVerify.html#${hash}`
             }
@@ -623,7 +711,7 @@ export default {
       }
     },
     updateHash() {
-      window.location.hash = this.getHash()
+      window.location.hash = '#' + this.getHash()
     },
     getHash() {
       return querystring.stringify(_.assign({},
@@ -719,6 +807,49 @@ export default {
     },
     setReferrer(referrer) {
       this.suggestion.referrer = referrer
+    },
+
+
+    refreshPreviousSuggestions () {
+      if (this.emailVerification.data) {
+        return axios.get('https://api.beeline.sg/suggestions/web', {
+          headers: {
+            authorization: `Bearer ${this.emailVerification.data}`
+          }
+        })
+        .then((s) => {
+          this.suggestions = s.data
+          /* If the selected / hovered entry was deleted, then we must also
+          stop showing it*/
+          this.suggestionsDisplay.selected = this.suggestionsDisplay.selected
+            && s.data.find(s => s.id === this.suggestionsDisplay.selected.id)
+          this.suggestionsDisplay.hover = this.suggestionsDisplay.selected
+            && s.data.find(s => s.id === this.suggestionsDisplay.selected.id)
+        })
+        .catch(() => {
+          this.suggestions = false
+          this.suggestionsDisplay.selected = null
+          this.suggestionsDisplay.hover = null
+        })
+      } else {
+        this.suggestions = []
+        this.suggestionsDisplay.selected = null
+        this.suggestionsDisplay.hover = null
+      }
+    },
+    panToSuggestion (s) {
+      if (this.$refs.map) {
+        const bounds = new google.maps.LatLngBounds()
+        bounds.extend({
+          lat: s.board.coordinates[1],
+          lng: s.board.coordinates[0],
+        })
+        bounds.extend({
+          lat: s.alight.coordinates[1],
+          lng: s.alight.coordinates[0],
+        })
+        this.$refs.map.fitBounds(bounds)
+      }
     }
   }
 }
