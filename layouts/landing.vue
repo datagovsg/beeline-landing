@@ -8,6 +8,22 @@
   </div>
 </template>
 
+<style>
+.vanish-enter-active, .vanish-leave-active {
+  transition: all 0.3s;
+}
+.vanish-enter, .vanish-leave-to {
+  max-height: 0;
+  /*transform: scale(0, 0);*/
+  opacity: 0;
+}
+.vanish-enter-to, .vanish-leave {
+  max-height: 999px;
+  /*transform: scale(1.0, 1.0);*/
+  opacity: 1.0;
+}
+</style>
+
 <script>
 import LandingNav from '~/components/landing/Nav.vue'
 import LandingFooter from '~/components/landing/Footer.vue'

@@ -2,15 +2,18 @@
   <div class="previous-suggestions">
     <h3>Your previous suggestions</h3>
 
+    <transition name="vanish">
     <template v-if="suggestions === null">
-      Loading...
+      <div>Loading...</div>
     </template>
     <template v-else-if="suggestions === false">
-      <i class="glyphicon glyphicon-alert"/>
-      There was an error loading your suggestions
+      <div>
+        <i class="glyphicon glyphicon-alert"/>
+        There was an error loading your suggestions
+      </div>
     </template>
     <template v-else-if="suggestions.length === 0">
-      You have no previous suggestions
+      <div>You have no previous suggestions</div>
     </template>
     <template v-else>
       <table>
@@ -61,6 +64,7 @@
         </VanishOnDelete>
       </table>
     </template>
+    </transition>
   </div>
 </template>
 

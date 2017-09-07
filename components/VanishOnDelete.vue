@@ -8,16 +8,18 @@ export default { props: ['tag'] }
 </script>
 <style>
 
-.vanish-on-delete-enter-active, .vanish-on-delete-leave-active {
+.vanish-on-delete-enter-active, .vanish-on-delete-leave-active, .vanish-item {
   transition: all 0.3s;
 }
 
 .vanish-on-delete-enter, .vanish-on-delete-leave-to {
   opacity: 0;
   transform: scaleY(0);
+  max-height: 0;
 }
 .vanish-on-delete-enter-to, .vanish-on-delete-leave {
   opacity: 1.0;
   transform: scaleY(1.0);
+  max-height: 999px;
 }
 </style>

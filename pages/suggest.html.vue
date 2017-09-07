@@ -4,13 +4,15 @@
       <h1 class="heading">Suggest a new route</h1>
 
       <!-- hmm... using events to pass data out? good idea? -->
-      <PreviousSuggestions v-if="emailVerification"
-          :token="emailVerification.data"
-          :suggestions="suggestions"
-          @refresh_required="refreshPreviousSuggestions"
-          @hover_suggestion="suggestionsDisplay.hover = $event"
-          @click_suggestion="suggestionsDisplay.selected = $event; panToSuggestion($event)"
-          />
+      <transition name="vanish">
+        <PreviousSuggestions v-if="emailVerification"
+            :token="emailVerification.data"
+            :suggestions="suggestions"
+            @refresh_required="refreshPreviousSuggestions"
+            @hover_suggestion="suggestionsDisplay.hover = $event"
+            @click_suggestion="suggestionsDisplay.selected = $event; panToSuggestion($event)"
+            />
+      </transition>
 
       <!-- map start -->
       <div class="col-lg-7 col-md-6 col-sm-12 col-xs-12">
