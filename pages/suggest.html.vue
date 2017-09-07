@@ -522,7 +522,7 @@ export default {
 
       // compute time as seconds past midnight
       var splitTime = this.arrivalTime.split(':')
-      var time = splitTime[0] * 3600000 + splitTime[1] * 60000
+      var time = splitTime[0] * 3600e3 + splitTime[1] * 60e3
 
       var suggestionData = {
         time: time,
@@ -534,7 +534,7 @@ export default {
         emailVerification: this.emailVerification
       }
       if (this.suggestion.referrer) {
-        _.assign(suggestionData, {
+        Object.assign(suggestionData, {
           referrer: this.suggestion.referrer
         })
       }
