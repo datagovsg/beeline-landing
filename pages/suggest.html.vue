@@ -30,20 +30,38 @@
           </similar-requests>
 
           <CurvedOD v-for="suggestion in suggestions"
+            v-if="(!suggestionsDisplay.hover || suggestion.id !== suggestionsDisplay.hover.id) &&
+              (!suggestionsDisplay.selected || suggestion.id !== suggestionsDisplay.selected.id)"
             :key="suggestion.id"
             :start="{lat: suggestion.board.coordinates[1], lng: suggestion.board.coordinates[0]}"
             :end="{lat: suggestion.alight.coordinates[1], lng: suggestion.alight.coordinates[0]}"
-            :options="{strokeColor: '#4b3863', strokeWeight: 1.5}"
+            :options="{
+              icons: mapSettings.chevronIcons('#4b3863', 2),
+              strokeColor: '#FF3863',
+              strokeOpacity: 0.0,
+              strokeWeight: 1.5,
+              }"
             />
           <CurvedOD v-if="suggestionsDisplay.hover"
             :start="{lat: suggestionsDisplay.hover.board.coordinates[1], lng: suggestionsDisplay.hover.board.coordinates[0]}"
             :end="{lat: suggestionsDisplay.hover.alight.coordinates[1], lng: suggestionsDisplay.hover.alight.coordinates[0]}"
-            :options="{strokeColor: '#4b3863', strokeWeight: 5}"
+            :options="{
+              icons: mapSettings.chevronIcons('#4b3863', 2.5),
+              strokeColor: '#FF3863',
+              strokeOpacity: 0.0,
+              strokeWeight: 5,
+              }"
             />
           <CurvedOD v-if="suggestionsDisplay.selected"
             :start="{lat: suggestionsDisplay.selected.board.coordinates[1], lng: suggestionsDisplay.selected.board.coordinates[0]}"
             :end="{lat: suggestionsDisplay.selected.alight.coordinates[1], lng: suggestionsDisplay.selected.alight.coordinates[0]}"
-            :options="{strokeColor: '#FF3863', strokeWeight: 5, zIndex: 10}"
+            :options="{
+              icons: mapSettings.chevronIcons('#FF3863', 2.5),
+              strokeColor: '#FF3863',
+              strokeOpacity: 0.0,
+              strokeWeight: 5,
+              zIndex: 10
+              }"
             />
           <gmap-marker v-if="suggestionsDisplay.selected"
             :position="{lat: suggestionsDisplay.selected.board.coordinates[1], lng: suggestionsDisplay.selected.board.coordinates[0]}"
@@ -793,7 +811,6 @@ export default {
       }
     },
     login() {
-      debugger
       this.lockPasswordless.socialOrEmailcode({
         authParams: {
           scope: 'openid profile email name offline_access',

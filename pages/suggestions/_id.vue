@@ -15,6 +15,7 @@
 
     <GmapMap class="stops-map" :center="mapCenter" :zoom="mapZoom">
       <!-- similar suggestions -->
+      <GmapCluster>
       <GmapMarker v-for="suggestion in similarSuggestions"
         :key="suggestion.id"
         :position="{
@@ -24,6 +25,8 @@
         :icon="mapSettings.manWavingArmDarkIcon"
         :zIndex="1"
         />
+      </GmapCluster>
+      <GmapCluster>
       <GmapMarker v-for="suggestion in similarSuggestions"
         :key="suggestion.id"
         :position="{
@@ -33,6 +36,7 @@
         :icon="mapSettings.manWavingArmDarkIcon"
         :zIndex="1"
         />
+      </GmapCluster>
 
       <!-- user's suggestion -->
       <GmapMarker
@@ -55,7 +59,12 @@
       <CurvedOD
         :start="{lat: suggestion.board.coordinates[1], lng: suggestion.board.coordinates[0]}"
         :end="{lat: suggestion.alight.coordinates[1], lng: suggestion.alight.coordinates[0]}"
-        :options="{strokeColor: '#FF3863', strokeWeight: 5}"
+        :options="{
+          icons: mapSettings.chevronIcons('#FF3863', 2.5),
+          strokeColor: '#FF3863',
+          strokeOpacity: 0.0,
+          strokeWeight: 5,
+          }"
         :zIndex="11"
         />
     </GmapMap>
@@ -118,8 +127,8 @@ export default {
         startLng: suggestion.board.coordinates[0],
         endLat: suggestion.alight.coordinates[1],
         endLng: suggestion.alight.coordinates[0],
-        startDistance: 4000,
-        endDistance: 4000,
+        startDistance: 2000,
+        endDistance: 2000,
       })).then(r => r.data),
       getReverseGeocodeString({
         lat: suggestion.board.coordinates[1],
@@ -140,6 +149,10 @@ export default {
   },
   data () {
     return {
+      suggestion: null,
+      similarSuggestions: null,
+      from: null,
+      to: null,
       mapCenter: {lat: 1.38, lng: 103.8},
       mapZoom: 11,
     }

@@ -5,6 +5,7 @@ export default new Vue({
   data() {
     return {
       manWavingArmIcon: null,
+      chevronIcons: () => null,
       manWavingArmDarkIcon: null,
       defaultInfoWindowOptions: null,
       defaultMapOptions: {
@@ -26,16 +27,23 @@ export default new Vue({
       this.manWavingArmIcon = {
         url: '/images/man-waving-arm.png',
         scaledSize: new google.maps.Size(32, 32),
-        zIndex: 10,
       }
       this.manWavingArmDarkIcon = {
         url: '/images/man-waving-arm-black.png',
         scaledSize: new google.maps.Size(28, 28),
-        zIndex: 1,
       }
       this.defaultInfoWindowOptions = {
         pixelOffset: new google.maps.Size(0, -40)
       }
+      this.chevronIcons = (color = '#000000', weight = 2.5) => [{
+        icon: {
+          strokeOpacity: 1.0,
+          strokeColor: color,
+          strokeWeight: weight,
+          path: 'M -0.5 0 L 0 1 L 0.5 0'
+        },
+        repeat: `${weight * 4}px`
+      }]
     })
   }
 })
