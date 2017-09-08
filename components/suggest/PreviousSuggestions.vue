@@ -38,13 +38,13 @@
               From
               <strong>
                 <GeocodedLatLng
-                  :value="{lat: suggestion.alight.coordinates[1], lng: suggestion.alight.coordinates[0]}"
+                  :value="{lat: suggestion.board.coordinates[1], lng: suggestion.board.coordinates[0]}"
                   />
               </strong>
               going to
               <strong>
                 <GeocodedLatLng
-                  :value="{lat: suggestion.board.coordinates[1], lng: suggestion.board.coordinates[0]}"
+                  :value="{lat: suggestion.alight.coordinates[1], lng: suggestion.alight.coordinates[0]}"
                   />
               </strong>
               arriving by
