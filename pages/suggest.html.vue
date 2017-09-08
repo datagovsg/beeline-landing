@@ -544,11 +544,16 @@ export default {
     //
     // const {default: Auth0Lock} = require('auth0-lock')
     const {default: Auth0LockPasswordless} = await import('auth0-lock-passwordless')
+    const Auth0 = await import('auth0-js')
 
     this.lockPasswordless = window.lockPasswordless || new Auth0LockPasswordless(
       'PwDT8IepW58tRCqZlLQkFKxKpuYrgNAp',
       'beeline-suggestions.auth0.com'
     )
+    this.$auth0 = new Auth0({
+      clientID: 'PwDT8IepW58tRCqZlLQkFKxKpuYrgNAp',
+      domain: 'beeline-suggestions.auth0.com',
+    })
 
     this.$authHandler = ({profile, idToken, accessToken, state, refreshToken}) => {
       this.emailVerification = {
@@ -562,20 +567,41 @@ export default {
     }
 
     if (window.localStorage.idToken) {
-      // Test the auth
-      axios.get('https://api.beeline.sg/suggestions/web', {
-        headers: {authorization: `Bearer ${window.localStorage.idToken}`}
+      // Check expiry
+      Promise.resolve(null)
+      .then(() => {
+        const exp = jwtDecode(window.localStorage.idToken).exp * 1000
+        const now = Date.now()
+
+        if (exp - now < 3600e3) { // less than one hour to expiry
+          // eslint-disable-next-line
+          throw {tryRefreshToken: true}
+        }
       })
+      .then(() =>
+        // Test the auth
+        axios.get('https://api.beeline.sg/suggestions/web', {
+          headers: {authorization: `Bearer ${window.localStorage.idToken}`}
+        })
+        .catch((err) => {
+          if (err.statusCode === 401) {
+            // eslint-disable-next-line
+            throw {tryRefreshToken: true}
+          } else {
+            throw err
+          }
+        })
+      )
       .then(() => {
         this.emailVerification = {
           type: 'auth0',
           data: window.localStorage.idToken
         }
       })
-      .catch((err) => {
-        if (err.statusCode === 401 && window.localStorage.refreshToken) {
+      .catch(async (err) => {
+        if (err.tryRefreshToken && window.localStorage.refreshToken) {
           // FIXME: this isn't going to work unless we define Auth0 somewhere
-          const auth0 = null
+          const auth0 = this.$auth0
           auth0.refreshToken(window.localStorage.refreshToken, (err, delegationResult) => {
             if (!err) return
 
