@@ -14,8 +14,7 @@
   </span>
 </template>
 <script>
-import querystring from 'querystring'
-import axios from 'axios'
+import ReverseGeocoder from '~/util/ReverseGeocoder'
 
 export default {
   props: ['value'],
@@ -29,9 +28,7 @@ export default {
   computed: {
     geocodedResultPromise () {
       if (this.value && this.value.lat && this.value.lng) {
-        return axios.get('https://api.beeline.sg/onemap/revgeocode?' + querystring.stringify({
-          location: `${this.value.lng},${this.value.lat}`
-        }))
+        return ReverseGeocoder(this.value)
       }
     }
   },
@@ -41,10 +38,7 @@ export default {
       immediate: true,
       handler (p) {
         p.then((r) => {
-          if (r.data.GeocodeInfo && r.data.GeocodeInfo[0].ErrorMessage) {
-            throw new Error(r.data.GeocodeInfo[0].ErrorMessage)
-          }
-          this.geocodedResult = r.data.GeocodeInfo && r.data.GeocodeInfo[0]
+          this.geocodedResult = r
         })
         .catch(() => {})
       }
