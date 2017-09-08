@@ -5,8 +5,8 @@
 
       <!-- hmm... using events to pass data out? good idea? -->
       <transition name="vanish">
-        <PreviousSuggestions v-if="emailVerification"
-            :token="emailVerification.data"
+        <PreviousSuggestions v-if="auth.token"
+            :token="auth.token"
             :suggestions="suggestions"
             @refresh_required="refreshPreviousSuggestions"
             @hover_suggestion="suggestionsDisplay.hover = $event"
@@ -238,17 +238,17 @@
           </transition>
         </div>
         <hr class="suggest">
-        <div class="form-group" v-if="!email">
+        <div class="form-group" v-if="!auth.email">
           You need to verify your email in order to proceed.
           <div class="text-center">
-            <button class="btn btn-default" @click="login" type="button">
+            <button class="btn btn-default" @click="showLogin" type="button">
               Verify my email
             </button>
           </div>
         </div>
 
         <transition name="expand">
-          <div class="form-group" v-show="noVerification || emailVerification">
+          <div class="form-group" v-show="noVerification || auth.token">
             <label>
               Email Address
             </label>
@@ -258,8 +258,8 @@
               :validate-rule="isEmail"
               @validation-changed="validation.email = $event"
             >
-              <input type="email" class="form-control" v-model="email"
-              placeholder="Your Email Address" :disabled="emailVerification">
+              <input type="email" class="form-control" v-model="auth.email"
+              placeholder="Your Email Address" :disabled="auth.token">
             </my-validate>
             <transition name="expand">
               <div class="alert alert-info" v-show="validation.email && validation.email.touched && !validation.email.valid">
@@ -270,8 +270,8 @@
           </div>
         </transition>
 
-        <div v-if="emailVerification">
-          <button class="btn btn-default" @click="emailVerification = null, email = null" type="button">
+        <div v-if="auth.token">
+          <button class="btn btn-default" @click="auth.token = null" type="button">
             Use another email address
           </button>
         </div>
@@ -293,7 +293,7 @@
             <h4 class="modal-title">Suggestion submitted</h4>
           </div>
           <div class="modal-body">
-            <p v-if="emailVerification">
+            <p v-if="auth.token">
               Thank you. Your suggestion has been submitted!
             </p>
             <p v-else>
@@ -349,13 +349,13 @@ import PreviousSuggestions from '~/components/suggest/PreviousSuggestions'
 import CurvedOD from '~/components/suggest/CurvedOD'
 import MyValidate from '~/components/suggest/MyValidate'
 import MapSettings from '~/components/suggest/MapSettings'
+import RequiresAuth from '~/mixins/RequiresAuth'
 import _ from 'lodash'
 import querystring from 'querystring'
 import axios from 'axios'
 import * as VueGoogleMaps from '~/node_modules/vue2-google-maps'
 import $ from 'jquery'
 import dateformat from 'dateformat'
-import jwtDecode from 'jwt-decode'
 import {isWithinReach} from '~/components/suggest/latlngDistance'
 
 const INIT = {
@@ -384,6 +384,7 @@ export default {
     PreviousSuggestions,
     CurvedOD
   },
+  mixins: [RequiresAuth],
   head () {
     return {
       meta: [
@@ -447,8 +448,6 @@ export default {
         referrer: null
       },
       arrivalTime: '',
-      emailVerification: null,
-      email: '',
       noVerification: false,
       agreeTerms: false,
       focusAt: null,
@@ -486,7 +485,7 @@ export default {
       return _.every([
         this.suggestion.origin,
         this.suggestion.destination,
-        this.email,
+        this.auth.email,
         this.arrivalTime,
         this.agreeTerms
       ])
@@ -504,6 +503,10 @@ export default {
 
     requestOriginDestination () {
       return [this.suggestion.origin, this.suggestion.destination]
+    },
+
+    'auth.token' () {
+      this.refreshPreviousSuggestions()
     }
   },
   watch: {
@@ -529,22 +532,6 @@ export default {
       this.updateRunningRoutes()
       this.updateCrowdstartedRoutes()
     },
-
-    'emailVerification.data': {
-      immediate: true,
-      handler (i) {
-        // Refresh suggestions because user changed
-        if (i) {
-          this.refreshPreviousSuggestions()
-
-          try {
-            this.email = jwtDecode(i).email
-          } catch (err) {
-            this.email = null
-          }
-        }
-      }
-    },
   },
   created() {
     this.geocoderPromise = VueGoogleMaps.loaded.then(() => {
@@ -558,81 +545,6 @@ export default {
 
     // Set up hash
     updateHash(this)
-
-    //
-    // const {default: Auth0Lock} = require('auth0-lock')
-    const {default: Auth0LockPasswordless} = await import('auth0-lock-passwordless')
-    const Auth0 = await import('auth0-js')
-
-    this.lockPasswordless = window.lockPasswordless || new Auth0LockPasswordless(
-      'PwDT8IepW58tRCqZlLQkFKxKpuYrgNAp',
-      'beeline-suggestions.auth0.com'
-    )
-    this.$auth0 = new Auth0({
-      clientID: 'PwDT8IepW58tRCqZlLQkFKxKpuYrgNAp',
-      domain: 'beeline-suggestions.auth0.com',
-    })
-
-    this.$authHandler = ({profile, idToken, accessToken, state, refreshToken}) => {
-      this.emailVerification = {
-        type: 'auth0',
-        data: idToken,
-      }
-
-      // Save the tokens to view suggestions
-      window.localStorage.idToken = idToken
-      window.localStorage.refreshToken = refreshToken
-    }
-
-    if (window.localStorage.idToken) {
-      // Check expiry
-      Promise.resolve(null)
-      .then(() => {
-        const exp = jwtDecode(window.localStorage.idToken).exp * 1000
-        const now = Date.now()
-
-        if (exp - now < 3600e3) { // less than one hour to expiry
-          // eslint-disable-next-line
-          throw {tryRefreshToken: true}
-        }
-      })
-      .then(() =>
-        // Test the auth
-        axios.get('https://api.beeline.sg/suggestions/web', {
-          headers: {authorization: `Bearer ${window.localStorage.idToken}`}
-        })
-        .catch((err) => {
-          if (err.statusCode === 401) {
-            // eslint-disable-next-line
-            throw {tryRefreshToken: true}
-          } else {
-            throw err
-          }
-        })
-      )
-      .then(() => {
-        this.emailVerification = {
-          type: 'auth0',
-          data: window.localStorage.idToken
-        }
-      })
-      .catch(async (err) => {
-        if (err.tryRefreshToken && window.localStorage.refreshToken) {
-          // FIXME: this isn't going to work unless we define Auth0 somewhere
-          const auth0 = this.$auth0
-          auth0.refreshToken(window.localStorage.refreshToken, (err, delegationResult) => {
-            if (!err) return
-
-            this.emailVerification = {
-              type: 'auth0',
-              data: delegationResult.id_token
-            }
-          })
-        } else {
-          throw err
-        }
-      })
-    }
   },
   methods: {
     dateformat,
@@ -648,8 +560,11 @@ export default {
         boardLon: this.suggestion.origin.lng(),
         alightLat: this.suggestion.destination.lat(),
         alightLon: this.suggestion.destination.lng(),
-        email: this.email,
-        emailVerification: this.emailVerification
+        email: this.auth.email,
+        emailVerification: {
+          type: 'auth0',
+          data: this.auth.token
+        }
       }
       if (this.suggestion.referrer) {
         Object.assign(suggestionData, {
@@ -665,7 +580,7 @@ export default {
 
         $('#submitted-dialog').modal('show')
           .on('hidden.bs.modal', () => {
-            if (this.emailVerification) {
+            if (this.auth.token) {
               // No need to redirect... just reload the suggestions
               // window.location.href = `/suggestSubmitted.html#${hash}`
             } else {
@@ -810,34 +725,6 @@ export default {
         this.focusAt = null
       }
     },
-    login() {
-      this.lockPasswordless.socialOrEmailcode({
-        authParams: {
-          scope: 'openid profile email name offline_access',
-        },
-        dict: {
-          title: 'Beeline Suggestions',
-          networkOrEmail: {
-            smallSocialButtonsHeader: 'Connect using single sign-on (we will only receive your email address)',
-            separatorText: 'Or, verify your email using a one-time password.',
-            emailInputPlaceholder: "yours@example.com",
-          },
-        },
-        icon: 'https://datagovsg.github.io/beeline-landing/images/beelineAuth0.png',
-        connections: ['facebook', 'google-oauth2'],
-        autoclose: true,
-        popup: true,
-        responseType: 'token',
-      }, (error, profile, idToken, accessToken, state, refreshToken) => {
-        if (error) {
-          // FIXME: use a soft dialog
-          alert("Your email could not be verified")
-          return
-        }
-
-        this.$authHandler({profile, idToken, accessToken, state, refreshToken})
-      })
-    },
     validLatLng(latlng) {
       return latlng &&
           (latlng.lat() >= 1 && latlng.lat() <= 2) &&
@@ -852,10 +739,10 @@ export default {
 
 
     refreshPreviousSuggestions () {
-      if (this.emailVerification.data) {
+      if (this.auth.token) {
         return axios.get('https://api.beeline.sg/suggestions/web', {
           headers: {
-            authorization: `Bearer ${this.emailVerification.data}`
+            authorization: `Bearer ${this.auth.token}`
           }
         })
         .then((s) => {

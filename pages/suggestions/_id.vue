@@ -96,11 +96,13 @@ import dateformat from 'dateformat'
 import PageDisqusThread from '~/components/PageDisqusThread'
 import {getReverseGeocodeString} from '~/util/ReverseGeocoder'
 import MapSettings from '~/components/suggest/MapSettings'
+import RequiresAuth from '~/mixins/RequiresAuth'
 import CurvedOD from '~/components/suggest/CurvedOD'
 
 export default {
   layout: 'landing',
   props: ['id'],
+  mixins: [RequiresAuth],
   head () {
 // https://moz.com/blog/meta-data-templates-123
     return {
@@ -155,6 +157,19 @@ export default {
       to: null,
       mapCenter: {lat: 1.38, lng: 103.8},
       mapZoom: 11,
+    }
+  },
+  watch: {
+    /* When the token is updated, reload the page to turn on/off anonymization */
+    'auth.token': {
+      immediate: true,
+      async handler (t) {
+        if (t) {
+          this.suggestion = (await axios.get(`https://api.beeline.sg/suggestions/web/${this.$route.params.id}`, {
+            headers: {authorization: `Bearer ${t}`}
+          })).data
+        }
+      }
     }
   },
   computed: {
