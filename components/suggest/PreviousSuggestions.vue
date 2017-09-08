@@ -53,6 +53,12 @@
               </strong>
             </td>
             <td>
+              <nuxt-link :to="`/suggestions/${suggestion.id}`"
+                  title="View suggestion details">
+                <i class="glyphicon glyphicon-new-window" />
+              </nuxt-link>
+            </td>
+            <td>
               {{dateformat(suggestion.createdAt, 'dd mmm yyyy')}}
             </td>
             <td class="delete">

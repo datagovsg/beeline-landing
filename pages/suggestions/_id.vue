@@ -3,39 +3,93 @@
     <h1>{{from}} to {{to}}</h1>
     <h2>Suggestion by {{suggestion.email}}</h2>
 
+    <div style="float: right; width: 350px">
+      <p>
+        There are {{similarSuggestions.length - 1}} other suggestions
+        near this suggestion.
+      </p>
+      <transition name="expand">
+        <div v-show="similarSuggestions.length > 0">
+          <RequestsTimeHistogram :requests="similarSuggestions"
+            :width="320" :height="320" />
+        </div>
+      </transition>
+    </div>
+
     <p>
       This suggestion was made on
       {{dateformat(suggestion.createdAt, 'dddd, dd mmmm yyyy h:MM TT')}}
     </p>
 
+    <h3>Running Routes Nearby</h3>
+
+    <NearbyRoutes :options="{tags: JSON.stringify(['public']), maxDistance: MAX_WALKING_DISTANCE}"
+        :start="pointToLatLng(suggestion.board)"
+        :end="pointToLatLng(suggestion.alight)">
+      <div slot="if-empty">
+        There are no routes running nearby.
+      </div>
+      <template slot="route-link" scope="s">
+        <a target="_new"
+           :href="'https://app.beeline.sg/#/tabs/booking/' + s.route.id + '/stops'">
+          ({{departureTimeFor(s.route)}}) {{s.route.from}}<br/>
+          ({{arrivalTimeFor(s.route)}}) {{s.route.to}}<br/>
+        </a>
+      </template>
+    </NearbyRoutes>
+
+    <h3>Crowdstart Routes Nearby</h3>
+
+    <NearbyRoutes :options="{tags: JSON.stringify(['crowdstart']), maxDistance: MAX_WALKING_DISTANCE}"
+        :start="pointToLatLng(suggestion.board)"
+        :end="pointToLatLng(suggestion.alight)"
+        >
+      <div slot="if-empty">
+        There are no crowdstart routes nearby.
+      </div>
+      <template slot="route-link" scope="s">
+        <a target="_new"
+           :href="'https://app.beeline.sg/#/tabs/crowdstart/' + s.route.id + '/detail'">
+          ({{departureTimeFor(s.route)}}) {{s.route.from}}<br/>
+          ({{arrivalTimeFor(s.route)}}) {{s.route.to}}<br/>
+        </a>
+      </template>
+    </NearbyRoutes>
+
+    <!-- <h3>Generate Some Routes</h3>
+
     <p>
-      There are {{similarSuggestions.length - 1}} other suggestions
-      near this suggestion.
-    </p>
+      This is an experimental feature that tries to find some usable routes
+      automatically. You think the generated route suits you, let us know!
+      We'll create a crowdstart route based on it.
+    </p> -->
+
+
+    <br clear="both" />
 
     <GmapMap class="stops-map" :center="mapCenter" :zoom="mapZoom">
       <!-- similar suggestions -->
-      <GmapCluster>
-      <GmapMarker v-for="suggestion in similarSuggestions"
-        :key="suggestion.id"
-        :position="{
-          lat: suggestion.board.coordinates[1],
-          lng: suggestion.board.coordinates[0],
-          }"
-        :icon="mapSettings.manWavingArmDarkIcon"
-        :zIndex="1"
-        />
+      <GmapCluster :maxZoom="14">
+        <GmapMarker v-for="suggestion in similarSuggestions"
+          :key="suggestion.id"
+          :position="{
+            lat: suggestion.board.coordinates[1],
+            lng: suggestion.board.coordinates[0],
+            }"
+          :icon="mapSettings.manWavingArmDarkIcon"
+          :zIndex="1"
+          />
       </GmapCluster>
-      <GmapCluster>
-      <GmapMarker v-for="suggestion in similarSuggestions"
-        :key="suggestion.id"
-        :position="{
-          lat: suggestion.alight.coordinates[1],
-          lng: suggestion.alight.coordinates[0],
-          }"
-        :icon="mapSettings.manWavingArmDarkIcon"
-        :zIndex="1"
-        />
+      <GmapCluster :maxZoom="14">
+        <GmapMarker v-for="suggestion in similarSuggestions"
+          :key="suggestion.id"
+          :position="{
+            lat: suggestion.alight.coordinates[1],
+            lng: suggestion.alight.coordinates[0],
+            }"
+          :icon="mapSettings.manWavingArmDarkIcon"
+          :zIndex="1"
+          />
       </GmapCluster>
 
       <!-- user's suggestion -->
@@ -93,11 +147,18 @@
 import querystring from 'querystring'
 import axios from 'axios'
 import dateformat from 'dateformat'
-import PageDisqusThread from '~/components/PageDisqusThread'
+import pointToLatLng from '~/util/pointToLatLng'
 import {getReverseGeocodeString} from '~/util/ReverseGeocoder'
+import PageDisqusThread from '~/components/PageDisqusThread'
+import NearbyRoutes from '~/components/suggest/NearbyRoutes'
+import RequestsTimeHistogram from '~/components/suggest/RequestsTimeHistogram'
 import MapSettings from '~/components/suggest/MapSettings'
 import RequiresAuth from '~/mixins/RequiresAuth'
 import CurvedOD from '~/components/suggest/CurvedOD'
+import {sortBy} from 'lodash'
+
+const MAX_WALKING_DISTANCE = 500
+const MAX_DISTANCE = 2000
 
 export default {
   layout: 'landing',
@@ -119,18 +180,15 @@ export default {
   async asyncData ({params, error}) {
     // Here we do a dirty trick. For SEO purposes, we fetch the suggestion unauthenticated,
     // and display it first, along with all the similar suggestions
-    // const suggestion = (await axios.get(`https://beeline-server-dev.herokuapp.com/suggestions/web/${params.id}`)).data
-    const suggestion = (await axios.get(`https://api.beeline.sg/suggestions/${params.id}`, {
-      headers: {authorization: `Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoiRGFuaWVsIFNpbSIsImVtYWlsIjoiZGFuaWVsX3NpbUBkYXRhLmdvdi5zZyIsImVtYWlsX3ZlcmlmaWVkIjp0cnVlLCJhcHBfbWV0YWRhdGEiOnsicm9sZXMiOlsic3VwZXJhZG1pbiJdfSwidXNlcl9pZCI6Imdvb2dsZS1vYXV0aDJ8MTA2NjgxNjE3MDc1ODI3NTU1NTk0IiwiaXNzIjoiaHR0cHM6Ly9iZWVsaW5lLmF1LmF1dGgwLmNvbS8iLCJzdWIiOiJnb29nbGUtb2F1dGgyfDEwNjY4MTYxNzA3NTgyNzU1NTU5NCIsImF1ZCI6IkJzbHNmbnJkS01lZHNtcjlHWWtUdjdlakpQUmVNZ2NFIiwiZXhwIjoxNTA0ODc2MTM3LCJpYXQiOjE1MDQ4NDAxMzcsImF6cCI6IkJzbHNmbnJkS01lZHNtcjlHWWtUdjdlakpQUmVNZ2NFIn0.aELT002aRjXVHwS6xfJ91-sXKGptBgzzbYny5h5ML-0`}
-    })).data
+    const suggestion = (await axios.get(`https://api.beeline.sg/suggestions/web/${params.id}`)).data
     const [similarSuggestions, from, to] = (await Promise.all([
       axios.get(`https://api.beeline.sg/suggestions/web/similar?` + querystring.stringify({
         startLat: suggestion.board.coordinates[1],
         startLng: suggestion.board.coordinates[0],
         endLat: suggestion.alight.coordinates[1],
         endLng: suggestion.alight.coordinates[0],
-        startDistance: 2000,
-        endDistance: 2000,
+        startDistance: MAX_DISTANCE,
+        endDistance: MAX_DISTANCE,
       })).then(r => r.data),
       getReverseGeocodeString({
         lat: suggestion.board.coordinates[1],
@@ -157,6 +215,8 @@ export default {
       to: null,
       mapCenter: {lat: 1.38, lng: 103.8},
       mapZoom: 11,
+      MAX_WALKING_DISTANCE,
+      MAX_DISTANCE,
     }
   },
   watch: {
@@ -176,10 +236,20 @@ export default {
     mapSettings: () => MapSettings,
   },
   components: {
-    PageDisqusThread, CurvedOD
+    PageDisqusThread, CurvedOD, RequestsTimeHistogram, NearbyRoutes
   },
   methods: {
-    dateformat
+    dateformat,
+    pointToLatLng,
+
+    departureTimeFor(route) {
+      var tripStops = sortBy(route.trips[0].tripStops, ts => ts.time)
+      return dateformat(new Date(tripStops[0].time).getTime() - 8 * 3600e3, 'h:MM TT', true)
+    },
+    arrivalTimeFor(route) {
+      var tripStops = sortBy(route.trips[0].tripStops, ts => ts.time)
+      return dateformat(new Date(tripStops[tripStops.length - 1].time).getTime() - 8 * 3600e3, 'h:MM TT', true)
+    },
   }
 }
 </script>
