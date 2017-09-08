@@ -25,11 +25,13 @@ export default new Vue({
     loaded.then(() => {
       this.manWavingArmIcon = {
         url: '/images/man-waving-arm.png',
-        scaledSize: new google.maps.Size(32, 32)
+        scaledSize: new google.maps.Size(32, 32),
+        zIndex: 10,
       }
       this.manWavingArmDarkIcon = {
         url: '/images/man-waving-arm-black.png',
-        scaledSize: new google.maps.Size(28, 28)
+        scaledSize: new google.maps.Size(28, 28),
+        zIndex: 1,
       }
       this.defaultInfoWindowOptions = {
         pixelOffset: new google.maps.Size(0, -40)

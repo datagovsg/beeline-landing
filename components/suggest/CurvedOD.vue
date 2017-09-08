@@ -1,5 +1,5 @@
 <template>
-  <GmapPolyline :path="curvedPath" :options="options" />
+  <GmapPolyline :path="curvedPath" :options="options" :zIndex="zIndex"/>
 </template>
 
 <script>
@@ -7,7 +7,7 @@ import {range} from 'lodash'
 
 /* Reference: http://xkjyeah.github.io/vue-google-maps/index-app.html#/03CurvedLine */
 export default {
-  props: ['start', 'end', 'options'],
+  props: ['start', 'end', 'options', 'zIndex'],
   computed: {
     curvedPath () {
       /*
