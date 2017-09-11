@@ -7,6 +7,7 @@ export default new Vue({
       manWavingArmIcon: null,
       chevronIcons: () => null,
       manWavingArmDarkIcon: null,
+      manWavingArmBlueIcon: null,
       defaultInfoWindowOptions: null,
       defaultMapOptions: {
         clickableIcons: false,
@@ -30,6 +31,10 @@ export default new Vue({
       }
       this.manWavingArmDarkIcon = {
         url: '/images/man-waving-arm-black.png',
+        scaledSize: new google.maps.Size(28, 28),
+      }
+      this.manWavingArmBlueIcon = {
+        url: '/images/man-waving-arm-blue.png',
         scaledSize: new google.maps.Size(28, 28),
       }
       this.defaultInfoWindowOptions = {
