@@ -21,6 +21,7 @@
             <tr>
               <th class="index"></th>
               <th>Suggestion</th>
+              <th></th>
               <th>Date</th>
               <th class="delete">Delete</th>
             </tr>
