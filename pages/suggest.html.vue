@@ -504,10 +504,6 @@ export default {
     requestOriginDestination () {
       return [this.suggestion.origin, this.suggestion.destination]
     },
-
-    'auth.token' () {
-      this.refreshPreviousSuggestions()
-    }
   },
   watch: {
     'suggestion.originPlace'(place) {
@@ -532,6 +528,10 @@ export default {
       this.updateRunningRoutes()
       this.updateCrowdstartedRoutes()
     },
+
+    'auth.token' () {
+      this.refreshPreviousSuggestions()
+    }
   },
   created() {
     this.geocoderPromise = VueGoogleMaps.loaded.then(() => {

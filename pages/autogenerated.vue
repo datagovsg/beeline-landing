@@ -1,0 +1,167 @@
+<template>
+  <div class="container">
+
+    <div class="routes">
+      <template v-if="routes === null">
+        Loading... (This will take a while, please be patient!)
+      </template>
+      <template v-else-if="routes === false">
+        There was an error generating the routes
+      </template>
+      <template v-else>
+        <p v-for="(route, index) in routes">
+          <a href="#" @click.prevent="viewRoute(route)">
+            Proposed Route {{index + 1}} (serves {{countPeople(route)}} people)
+          </a>
+        </p>
+      </template>
+    </div>
+
+    <GmapMap class="gmap" :center="{lat: 1.38, lng: 103.8}" :zoom="12"
+          ref="proposed-route-map">
+      <template v-if="selectedRoute">
+        <GmapMarker v-for="(stop, index) in selectedRoute.stops"
+          :key="index"
+          :position="{lat: stop.lat, lng: stop.lng}"
+          />
+        <GmapPolyline v-if="polylinePath" :path="polylinePath" />
+      </template>
+    </GmapMap>
+
+  </div>
+
+</template>
+
+<style scoped>
+  .container {
+    width: 100%;
+    min-width: 800px;
+    height: 400px;
+    display: flex;
+    align-items: stretch;
+  }
+
+  .gmap {
+    flex: 1 1 auto;
+  }
+
+  .routes {
+    flex: 0.5 1 300px;
+  }
+</style>
+
+<script>
+import axios from 'axios'
+import querystring from 'querystring'
+import {flatten} from 'lodash'
+// http://localhost:8080/routing/begin?startLat=1.4431762307345994&startLng=103.79058837890625&endLat=1.3003949349844803&endLng=103.79264831542969&time=0&settings=%7B%22maxDetourMinutes%22%3A2%2C%22startClusterRadius%22%3A3000%2C%22endClusterRadius%22%3A3000%2C%22startWalkingDistance%22%3A300%2C%22endWalkingDistance%22%3A300%2C%22dataSource%22%3A%22suggestions%22%7D%22
+
+export default {
+
+  layout: 'landing',
+
+  data () {
+    return {
+      routes: null,
+      selectedRoute: null,
+      polylinePath: null,
+    }
+  },
+
+  mounted () {
+    this.sendRequest()
+  },
+
+  methods: {
+    viewRoute (route) {
+      this.selectedRoute = route
+
+      // pan to the stops lat lng
+      const latLngBounds = new google.maps.LatLngBounds()
+      for (let stop of route.stops) {
+        const {lat, lng} = stop
+        latLngBounds.extend({lat, lng})
+      }
+      this.$refs['proposed-route-map'].fitBounds(latLngBounds)
+
+      // Make a request to obtain the polyline
+      this.requestPath(route.stops)
+    },
+    countPeople (route) {
+      return route.requests.length
+    },
+    requestPath (stops) {
+      const pathRequest = this.$pathRequest = axios.get('http://routing.beeline.sg/paths/' +
+        stops.map(s => s.index).join('/'))
+
+      pathRequest.then((r) => {
+        if (this.$pathRequest !== pathRequest) return
+
+        this.polylinePath = flatten(r.data)
+      })
+    },
+    sendRequest () {
+      this.routes = null
+
+      route({
+        startLat: this.$route.query.startLat,
+        startLng: this.$route.query.startLng,
+        endLat: this.$route.query.endLat,
+        endLng: this.$route.query.endLng,
+        time: 0,
+        settings: JSON.stringify({
+          maxDetourMinutes: 2,
+          startClusterRadius: 2000,
+          endClusterRadius: 2000,
+          startWalkingDistance: 300,
+          endWalkingDistance: 300,
+          dataSource: 'suggestions'
+        })
+      })
+      .then((r) => {
+        this.routes = r
+      })
+      .catch((err) => {
+        console.error(err)
+        this.routes = false
+      })
+    }
+  }
+}
+
+// const defaultOptions = {
+//   startLat: 1.4431762307345994,
+//   startLng: 103.79058837890625,
+//   endLat: 1.3003949349844803,
+//   endLng: 103.79264831542969,
+//   time: 0,
+//   settings: {
+//     maxDetourMinutes: 2,
+//     startClusterRadius: 2000,
+//     endClusterRadius: 3000,
+//     startWalkingDistance: 300,
+//     endWalkingDistance: 300,
+//     dataSource: 'suggestions'
+//   }
+// }
+
+async function route(options) {
+  const resultToken = await axios.get('http://routing.beeline.sg/routing/begin?' + querystring.stringify(options))
+    .then((r) => r.data)
+
+  while (true) {
+    const pollResult = await axios.get('http://routing.beeline.sg/routing/poll?' + querystring.stringify({
+      uuid: resultToken
+    }))
+
+    if (pollResult.status === 200) {
+      return pollResult.data
+    } else if (pollResult.status === 202) {
+      await new Promise(resolve => setTimeout(resolve, 5000))
+    } else {
+      throw new Error('Unknown response')
+    }
+  }
+}
+
+</script>

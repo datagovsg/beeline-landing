@@ -1,75 +1,75 @@
 <template>
-  <div class="previous-suggestions">
+  <div class="previous-suggestions container">
     <h3>Your previous suggestions</h3>
 
     <transition name="vanish">
-    <template v-if="suggestions === null">
-      <div>Loading...</div>
-    </template>
-    <template v-else-if="suggestions === false">
-      <div>
-        <i class="glyphicon glyphicon-alert"/>
-        There was an error loading your suggestions
-      </div>
-    </template>
-    <template v-else-if="suggestions.length === 0">
-      <div>You have no previous suggestions</div>
-    </template>
-    <template v-else>
-      <table>
-        <thead>
-          <tr>
-            <th class="index"></th>
-            <th>Suggestion</th>
-            <th>Date</th>
-            <th class="delete">Delete</th>
-          </tr>
-        </thead>
-        <VanishOnDelete tag="tbody">
-          <tr v-for="(suggestion, index) in suggestions" :key="suggestion.id"
-              @click="$emit('click_suggestion', suggestion)"
-              @mouseover="$emit('hover_suggestion', suggestion)"
-              @mouseout="$emit('hover_suggestion', null)"
-              >
-            <td class="index">
-              {{index + 1}}.
-            </td>
-            <td>
-              From
-              <strong>
-                <GeocodedLatLng
-                  :value="{lat: suggestion.board.coordinates[1], lng: suggestion.board.coordinates[0]}"
-                  />
-              </strong>
-              going to
-              <strong>
-                <GeocodedLatLng
-                  :value="{lat: suggestion.alight.coordinates[1], lng: suggestion.alight.coordinates[0]}"
-                  />
-              </strong>
-              arriving by
-              <strong>
-                {{dateformat(suggestion.time, 'h:MM TT', true)}}
-              </strong>
-            </td>
-            <td>
-              <nuxt-link :to="`/suggestions/${suggestion.id}`"
-                  title="View suggestion details">
-                <i class="glyphicon glyphicon-new-window" />
-              </nuxt-link>
-            </td>
-            <td>
-              {{dateformat(suggestion.createdAt, 'dd mmm yyyy')}}
-            </td>
-            <td class="delete">
-              <a href="#" @click.prevent="deleteSuggestion(suggestion)" title="Delete this suggestion">
-                <i class="glyphicon glyphicon-minus-sign" />
-              </a>
-            </td>
-          </tr>
-        </VanishOnDelete>
-      </table>
-    </template>
+      <template v-if="suggestions === null">
+        <div>Loading...</div>
+      </template>
+      <template v-else-if="suggestions === false">
+        <div>
+          <i class="glyphicon glyphicon-alert"/>
+          There was an error loading your suggestions
+        </div>
+      </template>
+      <template v-else-if="suggestions.length === 0">
+        <div>You have no previous suggestions</div>
+      </template>
+      <template v-else>
+        <table>
+          <thead>
+            <tr>
+              <th class="index"></th>
+              <th>Suggestion</th>
+              <th>Date</th>
+              <th class="delete">Delete</th>
+            </tr>
+          </thead>
+          <VanishOnDelete tag="tbody">
+            <tr v-for="(suggestion, index) in suggestions" :key="suggestion.id"
+                @click="$emit('click_suggestion', suggestion)"
+                @mouseover="$emit('hover_suggestion', suggestion)"
+                @mouseout="$emit('hover_suggestion', null)"
+                >
+              <td class="index">
+                {{index + 1}}.
+              </td>
+              <td>
+                From
+                <strong>
+                  <GeocodedLatLng
+                    :value="{lat: suggestion.board.coordinates[1], lng: suggestion.board.coordinates[0]}"
+                    />
+                </strong>
+                going to
+                <strong>
+                  <GeocodedLatLng
+                    :value="{lat: suggestion.alight.coordinates[1], lng: suggestion.alight.coordinates[0]}"
+                    />
+                </strong>
+                arriving by
+                <strong>
+                  {{dateformat(suggestion.time, 'h:MM TT', true)}}
+                </strong>
+              </td>
+              <td>
+                <nuxt-link :to="`/suggestions/${suggestion.id}`"
+                    title="View suggestion details">
+                  <i class="glyphicon glyphicon-new-window" />
+                </nuxt-link>
+              </td>
+              <td>
+                {{dateformat(suggestion.createdAt, 'dd mmm yyyy')}}
+              </td>
+              <td class="delete">
+                <a href="#" @click.prevent="deleteSuggestion(suggestion)" title="Delete this suggestion">
+                  <i class="glyphicon glyphicon-minus-sign" />
+                </a>
+              </td>
+            </tr>
+          </VanishOnDelete>
+        </table>
+      </template>
     </transition>
   </div>
 </template>
@@ -123,23 +123,6 @@ export default {
 
   methods: {
     dateformat,
-
-    // refresh () {
-    //   return axios.get('https://api.beeline.sg/suggestions/web', {
-    //     headers: {
-    //       authorization: `Bearer ${this.token}`
-    //     }
-    //   })
-    //   .then((s) => {
-    //     this.suggestions = s.data
-    //   })
-    //   .catch(() => {
-    //     this.suggestions = false
-    //   })
-    //   .then(() => {
-    //     this.$emit('list_changed', this.suggestions)
-    //   })
-    // },
 
     deleteSuggestion (suggestion) {
       // FIXME: use a soft modal
