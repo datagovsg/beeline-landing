@@ -3,7 +3,7 @@ import querystring from 'querystring'
 
 export default function ReverseGeocoder (latlng, multiple = false) {
   return axios.get('https://api.beeline.sg/onemap/revgeocode?' + querystring.stringify({
-    location: `${latlng.lng},${latlng.lat}`
+    location: `${latlng.lat},${latlng.lng}`
   }))
   .then((r) => {
     if (!r.data.GeocodeInfo || r.data.GeocodeInfo[0].ErrorMessage) {
