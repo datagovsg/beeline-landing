@@ -6,8 +6,8 @@ export default function ReverseGeocoder (latlng, multiple = false) {
     location: `${latlng.lat},${latlng.lng}`
   }))
   .then((r) => {
-    if (!r.data.GeocodeInfo || r.data.GeocodeInfo[0].ErrorMessage) {
-      throw new Error(r.data.GeocodeInfo[0].ErrorMessage)
+    if (!r.data.GeocodeInfo || r.data.GeocodeInfo.length === 0) {
+      throw new Error('Cannot Geocode')
     }
     return r.data.GeocodeInfo
   })
