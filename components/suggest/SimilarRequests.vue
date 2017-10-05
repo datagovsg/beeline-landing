@@ -1,7 +1,7 @@
 <template>
   <div>
     <gmap-marker v-for="request in requests"
-      :key="request.id"
+      :key="'origin' + request.id"
       :position="{lat: request.board.coordinates[1], lng: request.board.coordinates[0]}"
       :icon="mapSettings.manWavingArmDarkIcon"
       @mouseover="hoveredRequest = request, hoverAt='board'"
@@ -10,7 +10,7 @@
     </gmap-marker>
 
     <gmap-marker v-for="request in requests"
-      :key="request.id"
+      :key="'destination' + request.id"
       :position="{lat: request.alight.coordinates[1], lng: request.alight.coordinates[0]}"
       :icon="mapSettings.manWavingArmDarkIcon"
       @mouseover="hoveredRequest = request, hoverAt='alight'"
