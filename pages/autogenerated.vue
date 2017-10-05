@@ -25,7 +25,8 @@
           Sorry! There are no routes found.
         </template>
         <template v-else>
-          <h2>Route suggestions!</h2>
+          <h3>Route suggestions:</h3>
+
           <div v-for="(route, index) in routes" :key="index">
             <p :class="{active: selectedRoute === route}"
                 class="route" @click.prevent="viewRoute(route)">
@@ -97,6 +98,13 @@
       </GmapMap>
 
     </div>
+
+    <p>
+      <strong>Note:</strong> These are computer-generated routes. If you find
+      something that looks really interesting or feasible,
+      drop us an email at feedback&#x40;beeline.sg and we'll crowdstart
+      something for you!
+    </p>
   </div>
 </template>
 
@@ -249,11 +257,11 @@ export default {
         endLng: this.$route.query.endLng,
         time: 0,
         settings: JSON.stringify({
-          maxDetourMinutes: 2,
-          startClusterRadius: 2000,
-          endClusterRadius: 2000,
-          startWalkingDistance: 300,
-          endWalkingDistance: 300,
+          maxDetourMinutes: 2.5,
+          startClusterRadius: 3000,
+          endClusterRadius: 3000,
+          startWalkingDistance: 400,
+          endWalkingDistance: 400,
           dataSource: 'suggestions'
         })
       })
