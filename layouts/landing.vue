@@ -2,7 +2,7 @@
   <div>
     <!-- Static navbar -->
     <LandingNav />
-    <nuxt />
+    <nuxt :nuxtChildKey="$route.path" />
     <hr class="divider">
     <LandingFooter />
   </div>
