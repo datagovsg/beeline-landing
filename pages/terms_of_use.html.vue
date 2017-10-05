@@ -62,12 +62,11 @@
           of income, revenue or profits, lost or damaged data, or damage to any property, whether arising directly or indirectly from your use of the transport services provided by the transport service provider you select through this Service. </p>
 
         <h2>No Representations</h2>
-        <p>Without prejudice to the generality of the disclaimers stated above, you agree that the Contents as provided by this Service, including but not limited to any information relating to &ndash;
-          <ul>
-            <li>GovTech&CloseCurlyQuote;s statutory duties, functions and powers; and </li>
-            <li>GovTech&CloseCurlyQuote;s policies, frameworks, projects, initiatives, plans, schemes, objectives and instruments, </li>
-          </ul>
-        </p>
+        <p>Without prejudice to the generality of the disclaimers stated above, you agree that the Contents as provided by this Service, including but not limited to any information relating to &ndash;</p>
+        <ul>
+          <li>GovTech&CloseCurlyQuote;s statutory duties, functions and powers; and </li>
+          <li>GovTech&CloseCurlyQuote;s policies, frameworks, projects, initiatives, plans, schemes, objectives and instruments, </li>
+        </ul>
         <p>shall not be construed as constituting any promise or representation by GovTech to you or any third party that GovTech will or will not adopt any particular course of action or confer any particular benefit upon you or any third party. The Contents shall
           not preclude, limit or constrain GovTech&CloseCurlyQuote;s exercise of its rights, powers and discretion in any way nor compel, require or oblige GovTech to exercise its rights, powers and discretion in any particular manner or to achieve any particular
           outcome.</p>
