@@ -4,13 +4,13 @@
       Any emails in the code will be messed up by CloudFlare, and then Vue will
       choke because the DOM does not match the virtual DOM
     -->
-    <!--email_off-->
+    <span v-html="'<!--email_off-->'"></span>
     <!-- Static navbar -->
     <LandingNav />
     <nuxt :nuxtChildKey="$route.path" />
     <hr class="divider">
     <LandingFooter />
-    <!--/email_off-->
+    <span v-html="'<!--/email_off-->'"></span>
   </div>
 </template>
 
