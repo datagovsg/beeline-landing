@@ -10,31 +10,42 @@
 </template>
 
 <script>
+import axios from 'axios'
+import {flatten} from 'lodash'
+import mapSettings from '~/components/suggest/MapSettings'
+
 export default {
+  props: ['stops'],
+
   data () {
     return {
       polylinePath: null,
+      mapSettings,
     }
   },
   watch: {
     'stops': {
       immediate: true,
       handler (stops) {
-        this.requestPath(stops)
+        if (stops) {
+          this.requestPath(stops)
+        }
       }
     }
   },
   methods: {
     iconForStop (stop, index) {
-      const baseFilename = stop.numBoard
-        ? '/images/stops/stopBoard' : '/images/stops/stopAlight'
+      if (this.mapSettings.apiLoaded) { // reactive dependency on apiLoaded
+        const baseFilename = stop.numBoard
+          ? '/images/stops/stopBoard' : '/images/stops/stopAlight'
 
-      const stopNumber = (index + 1).toString().padStart(3, '0')
+        const stopNumber = (index + 1).toString().padStart(3, '0')
 
-      return {
-        url: `${baseFilename}${stopNumber}.png`,
-        scaledSize: new google.maps.Size(50, 50),
-        anchor: new google.maps.Point(25, 25),
+        return {
+          url: `${baseFilename}${stopNumber}.png`,
+          scaledSize: new google.maps.Size(50, 50),
+          anchor: new google.maps.Point(25, 25),
+        }
       }
     },
 
