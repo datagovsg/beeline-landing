@@ -731,7 +731,9 @@ export default {
           (latlng.lng() >= 100 && latlng.lng() <= 105)
     },
     updatePlace(place) {
-      this.suggestion[this.focusAt] = place.geometry.location
+      if (_.get(place, 'geometry.location')) {
+        this.suggestion[this.focusAt] = place.geometry.location
+      }
     },
     setReferrer(referrer) {
       this.suggestion.referrer = referrer
