@@ -33,6 +33,13 @@ module.exports = {
           exclude: /(node_modules)/
         })
       }
+      config.module.rules.push({
+        test: /\.js$/,
+        loader: 'babel-loader',
+        include: [
+          /node_modules\/vue2-google-maps/
+        ]
+      })
     }
   },
   plugins: [
