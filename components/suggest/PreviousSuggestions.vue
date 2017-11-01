@@ -22,13 +22,12 @@
               <th class="index"></th>
               <th>Suggestion</th>
               <th></th>
-              <th>Date</th>
+              <th style="width: 7em">Date</th>
               <th class="delete">Delete</th>
             </tr>
           </thead>
           <VanishOnDelete tag="tbody">
             <tr v-for="(suggestion, index) in suggestions" :key="suggestion.id"
-                @click="$emit('click_suggestion', suggestion)"
                 @mouseover="$emit('hover_suggestion', suggestion)"
                 @mouseout="$emit('hover_suggestion', null)"
                 >
@@ -36,27 +35,31 @@
                 {{index + 1}}.
               </td>
               <td>
-                From
-                <strong>
-                  <GeocodedLatLng
-                    :value="{lat: suggestion.board.coordinates[1], lng: suggestion.board.coordinates[0]}"
-                    />
-                </strong>
-                going to
-                <strong>
-                  <GeocodedLatLng
-                    :value="{lat: suggestion.alight.coordinates[1], lng: suggestion.alight.coordinates[0]}"
-                    />
-                </strong>
-                arriving by
-                <strong>
-                  {{dateformat(suggestion.time, 'h:MM TT', true)}}
-                </strong>
+                <a href="#"
+                  @click.prevent="$emit('click_suggestion', suggestion)" class="route-description">
+                  From
+                  <strong>
+                    <GeocodedLatLng
+                      :value="{lat: suggestion.board.coordinates[1], lng: suggestion.board.coordinates[0]}"
+                      />
+                  </strong>
+                  going to
+                  <strong>
+                    <GeocodedLatLng
+                      :value="{lat: suggestion.alight.coordinates[1], lng: suggestion.alight.coordinates[0]}"
+                      />
+                  </strong>
+                  arriving by
+                  <strong>
+                    {{dateformat(suggestion.time, 'h:MM TT', true)}}
+                  </strong>
+                </a>
               </td>
               <td>
                 <nuxt-link :to="`/suggestions/${suggestion.id}`"
-                    title="View suggestion details">
-                  <i class="glyphicon glyphicon-new-window" />
+                    title="View suggestion details"
+                    class="btn btn-default">
+                  See what's nearby<i class="glyphicon glyphicon-menu-right" />
                 </nuxt-link>
               </td>
               <td>
@@ -83,7 +86,6 @@ table {
 
   tr {
     border-bottom: solid 1px #CCC;
-    cursor: pointer;
     &:hover {
       td {
         background-color: #DEF;
@@ -94,6 +96,10 @@ table {
     padding: 0.5em;
     &.index, &.delete {
       width: 3em
+    }
+
+    &.route-description {
+      cursor: pointer;
     }
   }
 }

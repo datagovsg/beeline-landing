@@ -19,11 +19,11 @@
     "lodash": "^4.17.4",
     "mdi": "^1.9.33",
     "node-sass": "^4.5.3",
-    "nuxt": "^1.0.0-rc8",
+    "nuxt": "^1.0.0-rc11",
     "sass-loader": "^6.0.6",
     "vue-chartjs": "^2.8.2",
     "vue-nav-tabs": "^0.5.4",
-    "vue2-google-maps": "=0.8.0"
+    "vue2-google-maps": "~0.8.0"
   },
   "scripts": {
     "dev": "nuxt",

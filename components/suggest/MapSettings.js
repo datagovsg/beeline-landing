@@ -21,10 +21,12 @@ export default new Vue({
         south: 1.1954,
         west: 103.5814
       },
+      apiLoaded: false,
     }
   },
   created() {
     loaded.then(() => {
+      this.apiLoaded = true
       this.manWavingArmIcon = {
         url: '/images/man-waving-arm.png',
         scaledSize: new google.maps.Size(32, 32),
