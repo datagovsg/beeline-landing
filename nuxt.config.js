@@ -39,5 +39,9 @@ module.exports = {
     '~/plugins/loadComponents.js',
     '~/plugins/googleMaps.js',
     '~/plugins/suggest.js',
-  ]
+  ],
+
+  env: {
+    googleApiKey: process.env.GOOGLE_API_KEY || 'AIzaSyBtzoUVqHMufTzowtIw4nkH0aRolN87y7Y'
+  }
 }
