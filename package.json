@@ -4,6 +4,9 @@
   "description": "Nuxt.js project",
   "author": "daniel_sim <daniel_sim@data.gov.sg>",
   "private": true,
+  "engines": {
+    "node": "8.x.x"
+  },
   "dependencies": {
     "auth0-js": "^6.8.4",
     "auth0-lock": "^9.2.3",
