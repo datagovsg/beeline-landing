@@ -1,12 +1,22 @@
 <template>
   <div class="details-page container">
     <div>
+      <div><strong>Requested stops</strong></div>
+      <ol>
+        <li v-for="(stop, stopIndex) in stops" :key="`${stop.index}, ${stopIndex}`">
+          <a href="#" @click.prevent="viewStop(stop)">
+            {{stop.description}}
+          </a>
+        </li>
+      </ol>
+
       <div>
         <strong>Requested Arrival Times</strong>
       </div>
       <div>
-        Total number of requests: <strong>{{relatedRequests.length}}</strong>
+        Total number of requests: <strong>{{relatedRequests && relatedRequests.length}}</strong>
       </div>
+
       <requests-time-histogram :requests="relatedRequests"
         :width="320" :height="350">
       </requests-time-histogram>
@@ -98,6 +108,16 @@ export default {
             s.lng = s.coordinates[0]
             return s
           })
+      }
+    },
+  },
+
+  methods: {
+    viewStop (stop) {
+      const {lat, lng} = stop
+      this.$refs['proposed-route-map'].panTo({lat: parseFloat(lat), lng: parseFloat(lng)})
+      if (this.$refs['proposed-route-map'].$mapObject.getZoom() < 15) {
+        this.$refs['proposed-route-map'].$mapObject.setZoom(17)
       }
     },
   }
