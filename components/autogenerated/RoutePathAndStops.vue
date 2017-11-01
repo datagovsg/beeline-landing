@@ -50,7 +50,7 @@ export default {
     },
 
     requestPath (stops) {
-      const pathRequest = this.$pathRequest = axios.get('https://routing.beeline.sg/paths/' +
+      const pathRequest = this.$pathRequest = axios.get(`${process.env.beelineRoutingServer}/paths/` +
         stops.map(s => s.index).join('/'))
 
       pathRequest.then((r) => {

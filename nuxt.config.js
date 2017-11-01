@@ -42,6 +42,8 @@ module.exports = {
   ],
 
   env: {
-    googleApiKey: process.env.GOOGLE_API_KEY || 'AIzaSyBtzoUVqHMufTzowtIw4nkH0aRolN87y7Y'
+    googleApiKey: process.env.GOOGLE_API_KEY || 'AIzaSyBtzoUVqHMufTzowtIw4nkH0aRolN87y7Y',
+    beelineRoutingServer: 'https://routing.beeline.sg',
+    beelineApiServer: 'https://api.beeline.sg',
   }
 }

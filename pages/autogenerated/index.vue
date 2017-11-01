@@ -322,11 +322,11 @@ ${permalinkUrl}`
 }
 
 async function route(options) {
-  const resultToken = await axios.get('https://routing.beeline.sg/routing/begin?' + querystring.stringify(options))
+  const resultToken = await axios.get(`${process.env.beelineRoutingServer}/routing/begin?` + querystring.stringify(options))
     .then((r) => r.data)
 
   while (true) {
-    const pollResult = await axios.get('https://routing.beeline.sg/routing/poll?' + querystring.stringify({
+    const pollResult = await axios.get(`${process.env.beelineRoutingServer}/routing/poll?` + querystring.stringify({
       uuid: resultToken
     }))
 
