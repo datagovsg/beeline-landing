@@ -31,7 +31,7 @@
   "scripts": {
     "dev": "node --stack_size=1500 node_modules/.bin/nuxt",
     "build": "nuxt build",
-    "start": "nuxt start",
+    "start": "node --stack_size=1500 node_modules/.bin/nuxt start",
     "heroku-postbuild": "cross-env NODE_ENV=production npm run build",
     "generate": "nuxt generate",
     "lint": "eslint --ext .js,.vue --ignore-path .gitignore .",
