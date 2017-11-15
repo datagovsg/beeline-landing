@@ -676,11 +676,11 @@ export default {
     },
     departureTimeFor(route) {
       var tripStops = _.sortBy(route.trips[0].tripStops, ts => ts.time)
-      return dateformat(new Date(tripStops[0].time).getTime() - 8*3600e3, 'HH:MM', true)
+      return dateformat(new Date(tripStops[0].time).getTime() + 8*3600e3, 'HH:MM', true)
     },
     arrivalTimeFor(route) {
       var tripStops = _.sortBy(route.trips[0].tripStops, ts => ts.time)
-      return dateformat(new Date(tripStops[tripStops.length - 1].time).getTime() - 8*3600e3, 'HH:MM', true)
+      return dateformat(new Date(tripStops[tripStops.length - 1].time).getTime() + 8*3600e3, 'HH:MM', true)
     },
     click(event) {
       if (this.focusAt) {
