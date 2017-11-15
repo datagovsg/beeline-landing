@@ -624,6 +624,7 @@ export default {
           endLng: this.suggestion.destination.lng(),
           maxDistance: this.maxDistance,
           tags: JSON.stringify(['public']),
+          startTime: Date.now(),
         }))
         .then(r => r.data)
         .then(rs => {
