@@ -97,9 +97,36 @@
 <p>This version of the Terms of Use is dated 8 November 2017.</p>
       </div>
     </div>
+    <div class="row">
+      <h4 class="text-center">Schedule</h4>
+        <p><strong>1. Name of Service:</strong> Beeline</p>
+        <p><strong>2. Nature of Service</strong></p>
+            <ol type="a">
+              <li>This Service facilitates the booking of transport services for crowd-sourced road transport routes. </li>
+              <li>GovTech DOES NOT provide, own or operate any transport services. When making a booking through this Service, you are entering into a contract with your selected transport service provider.</li>
+              <li>GovTech is NOT responsible for the fulfilment and quality of transport services available through this Service.</li>
+              <li>Transport services, including provision of transport, booking amendments, cancellation and payment disputes, will be provided by your selected transport service provider in accordance with the Booking Policy of your selected transport service provider. The Booking Policy of your selected transport service provider is presented at the point of booking and in the email notification confirming your booking.</li>
+              <li>Any issues concerning payment (such as refunds or cancellations) should be directed to the respective transport service provider.
+
+</li>
+            </ol>
+
+        <p><strong>3. Third Party software/services</strong></p>
+          <ol type="a">
+            <li>Google Maps API (Terms of Service) – <a href="https://www.google.com/intl/en-GB/policies" target="_blank">https://www.google.com/intl/en-GB/policies</a></li>
+            <li>Google’s privacy policy - <a href="http://www.google.com/policies/privacy" target="_blank">http://www.google.com/policies/privacy</a></li>
+            <li>Stripe Core Services - <a href="https://stripe.com/sg/legal" target="_blank">https://stripe.com/sg/legal</a></li>
+            <li>Stripe Checkout - <a href="https://stripe.com/sg/checkout/legal" target="_blank">https://stripe.com/sg/checkout/legal</a></li>
+            <li>Stripe Connect Platform - <a href="https://stripe.com/sg/connect/legal" target="_blank">https://stripe.com/sg/connect/legal</a></li>
+            <li>Stripe Connected Account - <a href="https://stripe.com/sg/connect-account/legal" target="_blank">https://stripe.com/sg/connect-account/legal</a></li>
+            <li>Apple’s Distribution Terms - <a href="https://developer.apple.com/programs/terms/apple_developer_agreement.pdf" target="_blank">https://developer.apple.com/programs/terms/apple_developer_agreement.pdf</a></li>
+            <li>Google’s Distribution Terms  - <a href="https://play.google.com/about/developer-distribution-agreement.html" target="_blank">https://play.google.com/about/developer-distribution-agreement.html</a></li>
+          </ol>
+
+
+    </div>
 
   </div>
-
 </template>
 
 <script>
