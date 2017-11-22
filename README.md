@@ -1,6 +1,6 @@
-# crowdstart-routes
+# beeline-landing
 
-> Nuxt.js project
+The landing page for Beeline, containing the main frontend for route suggestions and proposals
 
 ## Build Setup
 
