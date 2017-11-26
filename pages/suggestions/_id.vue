@@ -60,7 +60,7 @@
 
     <p>
       This is an experimental feature that tries to find some usable routes
-      automatically. You think the generated route suits you, let us know!
+      automatically. If you think the generated route suits you, let us know!
       We can create a crowdstart route based on it.
     </p>
 
@@ -72,6 +72,7 @@
           startLng: suggestion.board.coordinates[0],
           endLat: suggestion.alight.coordinates[1],
           endLng: suggestion.alight.coordinates[0],
+          time: suggestion.time,
         }
         }">
         Ok... show me what you've got
