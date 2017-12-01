@@ -651,7 +651,8 @@ export default {
           _.some(
             route.trips[0].tripStops,
             ts => ts.canAlight && isWithinReach(ts, destination, this.maxDistance)
-          )
+          ) &&
+          Date.now() < new Date(route.notes.crowdstartExpiry).getTime()
         ))
         .then(filteredRoutes => {
           this.crowdstartedRoutes = filteredRoutes
