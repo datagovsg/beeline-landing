@@ -40,6 +40,6 @@ script:
   - docker tag $REPO:$TRAVIS_COMMIT $REPO:$TAG
   - docker tag $REPO:$TRAVIS_COMMIT $REPO:travis-$TRAVIS_BUILD_NUMBER
   - docker push $REPO
-  - sed -i -e "s/@TAG/$TAG/g" Dockerun.aws.json
-  - cat Dockerun.aws.json
+  - sed -i -e "s/@TAG/$TAG/g" Dockerrun.aws.json
+  - cat Dockerrun.aws.json
   - $BEELINE_VENV/bin/eb deploy beeline-landing-$TRAVIS_BRANCH --label $TRAVIS_COMMIT --message "$TRAVIS_COMMIT_MESSAGE" --timeout 25

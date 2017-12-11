@@ -35,4 +35,6 @@ RUN npm install --production
 EXPOSE 10000
 ENV PORT 10000
 
+RUN mkdir logs
+
 CMD npm run start
