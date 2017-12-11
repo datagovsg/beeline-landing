@@ -1,7 +1,7 @@
 {
-  "name": "crowdstart-routes",
+  "name": "beeline-landing",
   "version": "1.0.0",
-  "description": "Nuxt.js project",
+  "description": "Beeline's landing page and route suggestions module",
   "author": "Government Technology Agency of Singapore (https://www.tech.gov.sg)",
   "license": "Apache-2.0",
   "private": true,

@@ -12,7 +12,6 @@ COPY plugins /app/plugins
 COPY static /app/static
 COPY store /app/store
 COPY util /app/util
-COPY www /app/www
 COPY package.json nuxt.config.js /app/
 
 RUN apk add --update git bash openssh && \
