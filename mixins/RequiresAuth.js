@@ -107,7 +107,7 @@ export default {
             emailInputPlaceholder: 'yours@example.com',
           },
         },
-        icon: 'https://datagovsg.github.io/beeline-landing/images/beelineAuth0.png',
+        icon: '/images/beelineAuth0.png',
         connections: ['facebook', 'google-oauth2'],
         autoclose: true,
         popup: true,
