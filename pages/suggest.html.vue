@@ -277,9 +277,13 @@
         </div>
 
         <div class="text-center">
-          <button type="submit" class="btn btn-primary btn-lg submit" :disabled="!formValid">
+          <button type="submit" class="btn btn-primary btn-lg submit" :disabled="!formValid || (suggestions && suggestions.length >= 4)">
             Submit Route Suggestion
           </button>
+
+          <p v-if=" (suggestions && suggestions.length >= 4)">
+            Sorry! Each user is limited to 4 suggestions only!
+          </p>
         </div>
         <!-- END: Authentication providers -->
       </div>
