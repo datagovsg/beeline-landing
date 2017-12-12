@@ -29,7 +29,7 @@
       <div slot="if-empty">
         There are no routes running nearby.
       </div>
-      <template slot="route-link" scope="s">
+      <template slot="route-link" slot-scope="s">
         <a target="_new"
            :href="'https://app.beeline.sg/#/tabs/booking/' + s.route.id + '/stops'">
           ({{departureTimeFor(s.route)}}) {{s.route.from}}<br/>
@@ -47,7 +47,7 @@
       <div slot="if-empty">
         There are no crowdstart routes nearby.
       </div>
-      <template slot="route-link" scope="s">
+      <template slot="route-link" slot-scope="s">
         <a target="_new"
            :href="'https://app.beeline.sg/#/tabs/crowdstart/' + s.route.id + '/detail'">
           ({{departureTimeFor(s.route)}}) {{s.route.from}}<br/>
