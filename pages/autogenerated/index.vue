@@ -49,18 +49,21 @@
             <ol v-if="route.stops.length < 5" :class="{active: selectedRoute === route}">
               <li v-for="(stop, stopIndex) in route.stops" :key="`${index}, ${stopIndex}`">
                 <a href="#" @click.prevent="viewStop(stop)">
+                  ({{dateformat(stop.maxTime, 'h:MM TT', true)}})
                   {{stop.description}}
                 </a>
               </li>
             </ol>
             <ol v-else :class="{active: selectedRoute === route}">
               <li v-for="(stop, stopIndex) in route.stops.slice(0, 2)" :key="`${index}, ${stopIndex}`">
+                ({{dateformat(stop.maxTime, 'h:MM TT', true)}})
                 {{stop.description}}
               </li>
               <li style="list-style-type: none;">...</li>
               <li v-for="(stop, stopIndex) in route.stops.slice(route.stops.length - 2)"
                 :key="`${index}, -${stopIndex}`"
                 :value="route.stops.length - 1">
+                ({{dateformat(stop.maxTime, 'h:MM TT', true)}})
                 {{stop.description}}
               </li>
             </ol>
