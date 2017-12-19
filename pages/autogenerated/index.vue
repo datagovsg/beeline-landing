@@ -11,7 +11,7 @@
       <strong>To:</strong>
       {{toDescription}}
     </p>
-    
+
     <p v-if="this.time !== null">
       Arriving by
       <strong>
@@ -62,7 +62,7 @@
               <li style="list-style-type: none;">...</li>
               <li v-for="(stop, stopIndex) in route.stops.slice(route.stops.length - 2)"
                 :key="`${index}, -${stopIndex}`"
-                :value="route.stops.length - 1">
+                :value="route.stops.length - 1 + stopIndex">
                 ({{dateformat(stop.maxTime, 'h:MM TT', true)}})
                 {{stop.description}}
               </li>
