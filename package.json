@@ -28,6 +28,7 @@
     "vue": "^2.5.13",
     "vue-chartjs": "^2.8.2",
     "vue-nav-tabs": "^0.5.4",
+    "vue-template-compiler": "^2.5.13",
     "vue2-google-maps": "~0.8.0"
   },
   "scripts": {
