@@ -546,6 +546,8 @@ export default {
     window.jQuery = $
     require('bootstrap')
 
+    this.refreshPreviousSuggestions()
+
     // Copy data over from the hash
     // This ensures that even after the user was redirected to verify his email address
     // we still preserve the state as it was
@@ -749,7 +751,6 @@ export default {
     setReferrer(referrer) {
       this.suggestion.referrer = referrer
     },
-
 
     refreshPreviousSuggestions () {
       if (this.auth.token) {
