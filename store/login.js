@@ -1,5 +1,3 @@
-import {getLock} from '~/plugins/lock'
-
 export const state = () => {
   return {
     idToken: null, refreshToken: null,
@@ -19,7 +17,7 @@ export const mutations = {
 
 export const actions = {
   showLoginDialog () {
-    getLock().show()
+    // getLock().show()
   },
   logout (context) {
     context.commit('updateWithResult', {

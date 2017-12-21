@@ -1,56 +1,76 @@
 import jwtDecode from 'jwt-decode'
 import axios from 'axios'
+import Vue from 'vue'
 
-export default {
-  data () {
-    return {
-      auth: {
-        email: null,
-        token: null,
-      },
-    }
+export const globalAuthState = new Vue({
+  data: {
+    email: null,
+    token: null,
+
+    _hasCheckedSession: false,
+    _auth0Promise: false,
   },
+
   watch: {
-    'auth.token': {
+    'token': {
       immediate: true,
       handler (i) {
         // Refresh suggestions because user changed
         if (i) {
           try {
-            this.auth.email = jwtDecode(i).email
+            this.email = jwtDecode(i).email
           } catch (err) {
-            this.auth.email = null
+            this.email = null
           }
         } else {
-          this.auth.email = null
+          this.email = null
         }
       }
     },
   },
-  async mounted() {
-    const {default: Auth0LockPasswordless} = await import('auth0-lock-passwordless')
-    const Auth0 = await import('auth0-js')
 
-    this.lockPasswordless = window.lockPasswordless || new Auth0LockPasswordless(
-      'PwDT8IepW58tRCqZlLQkFKxKpuYrgNAp',
-      'beeline-suggestions.auth0.com'
-    )
-    this.$auth0 = new Auth0({
-      clientID: 'PwDT8IepW58tRCqZlLQkFKxKpuYrgNAp',
-      domain: 'beeline-suggestions.auth0.com',
-    })
+  methods: {
+    createAuth0Instance () {
+      const promise = import('auth0-js')
+      .then((Auth0) => {
+        return new Auth0.WebAuth({
+          clientID: 'PwDT8IepW58tRCqZlLQkFKxKpuYrgNAp',
+          domain: 'beeline-suggestions.auth0.com',
+          redirectUri: window.location.protocol + '//' +
+            window.location.host +
+            '/login',
+          scope: 'openid profile email name offline_access',
+          responseType: 'token',
+        })
+      })
 
-    this.$authHandler = ({profile, idToken, accessToken, state, refreshToken}) => {
-      this.auth.token = idToken
+      promise.then(() => {
+        if (window.localStorage.idToken) {
+          this._checkCurrentToken()
+        }
+      })
 
-      // Save the tokens to view suggestions
-      window.localStorage.idToken = idToken
-      window.localStorage.refreshToken = refreshToken
-    }
+      return promise
+    },
 
-    if (window.localStorage.idToken) {
+    getAuth0Instance () {
+      return this.auth0Promise ||
+        (this.auth0Promise = this.createAuth0Instance())
+    },
+
+    _disableTokenCheck () {
+      this.hasCheckedSession = true
+    },
+
+    _checkCurrentToken () {
+      if (this.hasCheckedSession) {
+        return
+      }
+
+      this.hasCheckedSession = true
+
       // Check expiry
-      Promise.resolve(null)
+      return Promise.resolve(null)
       .then(() => {
         const exp = jwtDecode(window.localStorage.idToken).exp * 1000
         const now = Date.now()
@@ -75,52 +95,82 @@ export default {
         })
       )
       .then(() => {
-        this.auth.token = window.localStorage.idToken
+        this.token = window.localStorage.idToken
       })
       .catch(async (err) => {
         if (err.tryRefreshToken && window.localStorage.refreshToken) {
-          // FIXME: this isn't going to work unless we define Auth0 somewhere
-          const auth0 = this.$auth0
-          auth0.refreshToken(window.localStorage.refreshToken, (err, delegationResult) => {
-            if (err) return
-
-            this.auth.token = window.localStorage.idToken = delegationResult.id_token
+          // FIXME: This is the old Auth0 API
+          // For info see https://auth0.com/docs/tokens/delegation
+          axios.post('https://beeline-suggestions.auth0.com/delegation', {
+            grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+            client_id: 'PwDT8IepW58tRCqZlLQkFKxKpuYrgNAp',
+            refresh_token: window.localStorage.refreshToken,
+            scope: 'openid profile email name offline_access',
+          })
+          .then((result) => {
+            console.log('Used refresh token...')
+            this.token = result.data.id_token
+            this.saveToken(this.token, window.localStorage.refreshToken)
           })
         } else {
           throw err
         }
       })
+    },
+
+    showLogin () {
+      // See recommendations at
+      // https://auth0.com/docs/users/redirecting-users
+      window.sessionStorage.redirectAfterLoginTo = window.location.href
+      this.$auth0WebAuth.authorize({})
+    },
+
+    showLoginPasswordless (email) {
+      return new Promise((resolve, reject) => {
+        this.$auth0WebAuth.passwordlessStart({
+          connection: 'email',
+          email,
+          send: 'code',
+        }, (err, res) => {
+          if (err) return reject(err)
+          resolve(res)
+        })
+      })
+    },
+
+    verifyPasswordless (email, code) {
+      // See recommendations at
+      // https://auth0.com/docs/users/redirecting-users
+      window.sessionStorage.redirectAfterLoginTo = window.location.href
+
+      return new Promise((resolve, reject) => {
+        this.$auth0WebAuth.passwordlessVerify({
+          connection: 'email',
+          email,
+          verificationCode: code,
+        }, (err, res) => {
+          if (err) return reject(err)
+          resolve(res)
+        })
+      })
+    },
+
+    saveToken (idToken, refreshToken) {
+      window.localStorage.idToken = idToken
+      window.localStorage.refreshToken = refreshToken
+    }
+  }
+})
+
+export default {
+  data () {
+    return {
+      auth: globalAuthState,
     }
   },
-
-  methods: {
-    showLogin () {
-      this.lockPasswordless.socialOrEmailcode({
-        authParams: {
-          scope: 'openid profile email name offline_access',
-        },
-        dict: {
-          title: 'Beeline Suggestions',
-          networkOrEmail: {
-            smallSocialButtonsHeader: 'Connect using single sign-on (we will only receive your email address)',
-            separatorText: 'Or, verify your email using a one-time password.',
-            emailInputPlaceholder: 'yours@example.com',
-          },
-        },
-        icon: '/images/beelineAuth0.png',
-        connections: ['facebook', 'google-oauth2'],
-        autoclose: true,
-        popup: true,
-        responseType: 'token',
-      }, (error, profile, idToken, accessToken, state, refreshToken) => {
-        if (error) {
-          // FIXME: use a soft dialog
-          alert(`Your email could not be verified`)
-          return
-        }
-
-        this.$authHandler({profile, idToken, accessToken, state, refreshToken})
-      })
-    }
+  mounted () {
+    this.auth.getAuth0Instance().then((a0) => {
+      this.auth.$auth0WebAuth = a0
+    })
   }
 }

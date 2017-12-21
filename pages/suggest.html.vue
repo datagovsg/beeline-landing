@@ -239,11 +239,8 @@
         </div>
         <hr class="suggest">
         <div class="form-group" v-if="!auth.email">
-          You need to verify your email in order to proceed.
           <div class="text-center">
-            <button class="btn btn-default" @click="showLogin" type="button">
-              Verify my email
-            </button>
+            <VerifyEmailBox />
           </div>
         </div>
 
@@ -350,6 +347,7 @@ label.control-label {
 import SimilarRequests from '~/components/suggest/SimilarRequests'
 import RequestsTimeHistogram from '~/components/suggest/RequestsTimeHistogram'
 import PreviousSuggestions from '~/components/suggest/PreviousSuggestions'
+import VerifyEmailBox from '~/components/VerifyEmailBox'
 import CurvedOD from '~/components/suggest/CurvedOD'
 import MyValidate from '~/components/suggest/MyValidate'
 import MapSettings from '~/components/suggest/MapSettings'
@@ -386,7 +384,8 @@ export default {
     SimilarRequests,
     MyValidate,
     PreviousSuggestions,
-    CurvedOD
+    CurvedOD,
+    VerifyEmailBox
   },
   mixins: [RequiresAuth],
   head () {
@@ -547,8 +546,12 @@ export default {
     window.jQuery = $
     require('bootstrap')
 
-    // Set up hash
-    updateHash(this)
+    this.refreshPreviousSuggestions()
+
+    // Copy data over from the hash
+    // This ensures that even after the user was redirected to verify his email address
+    // we still preserve the state as it was
+    copyDataFromHash(this)
   },
   methods: {
     dateformat,
@@ -676,7 +679,11 @@ export default {
         this.suggestion.destination ? {
           destinationLat: this.suggestion.destination.lat(),
           destinationLng: this.suggestion.destination.lng(),
-        } : {}
+        } : {},
+        {
+          agreeTerms: this.agreeTerms,
+          arrivalTime: this.arrivalTime,
+        }
       ))
     },
     departureTimeFor(route) {
@@ -745,7 +752,6 @@ export default {
       this.suggestion.referrer = referrer
     },
 
-
     refreshPreviousSuggestions () {
       if (this.auth.token) {
         return axios.get('https://api.beeline.sg/suggestions/web', {
@@ -790,7 +796,7 @@ export default {
   }
 }
 
-function updateHash (vue) {
+function copyDataFromHash (vue) {
   var hash = window.location.hash;
   if (!hash) return;
   hash = hash.substr(1);
@@ -812,8 +818,14 @@ function updateHash (vue) {
     }
   });
 
-  if(hash.referrer) {
+  if (hash.referrer) {
     vue.setReferrer(hash.referrer)
+  }
+  if (hash.arrivalTime) {
+    vue.arrivalTime = hash.arrivalTime
+  }
+  if (hash.agreeTerms) {
+    vue.agreeTerms = !! hash.agreeTerms
   }
 }
 
