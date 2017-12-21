@@ -6,7 +6,7 @@
     There was an error fetching the routes
   </div>
   <div v-else-if="nearbyRoutes.length > 0">
-    <p class="small" v-for="route in nearbyRoutes">
+    <p class="small" :key="route.id" v-for="route in nearbyRoutes">
       <slot name="route-link" :route="route">
         ({{departureTimeFor(route)}}) {{route.from}}<br/>
         ({{arrivalTimeFor(route)}}) {{route.to}}<br/>
