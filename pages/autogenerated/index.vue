@@ -308,7 +308,10 @@ export default {
         })
       })
       .then((r) => {
-        this.routes = r
+        this.routes = r.map(route => ({
+          ...route,
+          stops: fixWrongTime(route.stops, this.time)
+        }))
 
         if (r.length >= 1) {
           this.panToRoute(r[0])
@@ -361,6 +364,31 @@ async function route(options) {
       throw new Error('Unknown response')
     }
   }
+}
+
+function fixWrongTime(stops, finalTime) {
+  const travelTimes = stops.map((stop, index, array) => {
+    if (index === 0) {
+      return null
+    } else {
+      return stop.maxTime - array[index - 1].maxTime
+    }
+  }).slice(1) // Drop the initial null value
+
+  const correctTimes = travelTimes.reverse().reduce(
+    (times, travelTime) => {
+      times.push(times[times.length - 1] - travelTime)
+      return times
+    },
+    [finalTime]
+  ).reverse()
+
+  return stops.map((stop, index) => {
+    return {
+      ...stop,
+      maxTime: correctTimes[index],
+    }
+  })
 }
 
 </script>
