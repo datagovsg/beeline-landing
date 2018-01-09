@@ -31,7 +31,7 @@
       </div>
       <template slot="route-link" slot-scope="s">
         <a target="_new"
-           :href="'https://app.beeline.sg/#/tabs/booking/' + s.route.id + '/stops'">
+           :href="'https://app.beeline.sg/tabs/route/' + s.route.id">
           ({{departureTimeFor(s.route)}}) {{s.route.from}}<br/>
           ({{arrivalTimeFor(s.route)}}) {{s.route.to}}<br/>
         </a>
@@ -49,7 +49,7 @@
       </div>
       <template slot="route-link" slot-scope="s">
         <a target="_new"
-           :href="'https://app.beeline.sg/#/tabs/crowdstart/' + s.route.id + '/detail'">
+           :href="'https://app.beeline.sg/tabs/crowdstart/' + s.route.id + '/detail'">
           ({{departureTimeFor(s.route)}}) {{s.route.from}}<br/>
           ({{arrivalTimeFor(s.route)}}) {{s.route.to}}<br/>
         </a>
@@ -259,11 +259,11 @@ export default {
 
     departureTimeFor(route) {
       var tripStops = sortBy(route.trips[0].tripStops, ts => ts.time)
-      return dateformat(new Date(tripStops[0].time).getTime() - 8 * 3600e3, 'h:MM TT', true)
+      return dateformat(new Date(tripStops[0].time).getTime() + 8 * 3600e3, 'h:MM TT', true)
     },
     arrivalTimeFor(route) {
       var tripStops = sortBy(route.trips[0].tripStops, ts => ts.time)
-      return dateformat(new Date(tripStops[tripStops.length - 1].time).getTime() - 8 * 3600e3, 'h:MM TT', true)
+      return dateformat(new Date(tripStops[tripStops.length - 1].time).getTime() + 8 * 3600e3, 'h:MM TT', true)
     },
   }
 }
