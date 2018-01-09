@@ -19,7 +19,7 @@
               <route v-for="route in filteredRoutes.public.slice((page) * PAGE_SIZE, (page + 1) * PAGE_SIZE)"
                   :route="route" :key="route.id">
                 <div slot="link">
-                  <a :href="`https://app.beeline.sg/#/tabs/booking/${route.id}/stops`" slot="link"
+                  <a :href="`https://app.beeline.sg/tabs/route/${route.id}`" slot="link"
                     class="price">
                     ${{route.trips[0].price}}
                     »
@@ -51,7 +51,7 @@
                   Details
                 </a>
                 <div slot="link">
-                  <a :href="`https://app.beeline.sg/#/tabs/crowdstart/${route.id}/detail`">
+                  <a :href="`https://app.beeline.sg/tabs/crowdstart/${route.id}/detail`">
                     Crowdstart Now!
                   </a>
                 </div>
@@ -70,7 +70,7 @@
           <a :href="`lite/${route.id}`">
             Details
           </a>
-          <a :href="`https://app.beeline.sg/#/tabs/lite/summary/${encodeURIComponent(label)}`">
+          <a :href="`https://app.beeline.sg/tabs/lite/summary/${encodeURIComponent(label)}`">
             Track this bus!
           </a>
         </route>

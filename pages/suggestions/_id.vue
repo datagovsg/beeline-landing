@@ -31,7 +31,7 @@
       </div>
       <template slot="route-link" slot-scope="s">
         <a target="_new"
-           :href="'https://app.beeline.sg/#/tabs/booking/' + s.route.id + '/stops'">
+           :href="'https://app.beeline.sg/tabs/route/' + s.route.id">
           ({{departureTimeFor(s.route)}}) {{s.route.from}}<br/>
           ({{arrivalTimeFor(s.route)}}) {{s.route.to}}<br/>
         </a>
@@ -49,7 +49,7 @@
       </div>
       <template slot="route-link" slot-scope="s">
         <a target="_new"
-           :href="'https://app.beeline.sg/#/tabs/crowdstart/' + s.route.id + '/detail'">
+           :href="'https://app.beeline.sg/tabs/crowdstart/' + s.route.id + '/detail'">
           ({{departureTimeFor(s.route)}}) {{s.route.from}}<br/>
           ({{arrivalTimeFor(s.route)}}) {{s.route.to}}<br/>
         </a>

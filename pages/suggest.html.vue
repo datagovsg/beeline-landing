@@ -150,7 +150,7 @@
           {{runningRoutes.length}} routes running nearby! Book now!
           <p class="small" v-for="route in runningRoutes">
             <a target="new"
-               :href="'https://app.beeline.sg/#/tabs/booking/'+route.id+'/stops'">
+               :href="'https://app.beeline.sg/tabs/route/' + route.id">
               ({{departureTimeFor(route)}}) {{route.from}}<br/>
               ({{arrivalTimeFor(route)}}) {{route.to}}<br/>
             </a>
@@ -163,7 +163,7 @@
           {{crowdstartedRoutes.length}} routes similar to your suggestion are being crowdstarted!
           <p class="small" v-for="route in crowdstartedRoutes">
             <a target="new"
-               :href="'https://app.beeline.sg/#/tabs/crowdstart/'+route.id+'/detail'">
+               :href="'https://app.beeline.sg/tabs/crowdstart/'+route.id+'/detail'">
               ({{departureTimeFor(route)}}) {{route.from}}<br/>
               ({{arrivalTimeFor(route)}}) {{route.to}}<br/>
             </a>
