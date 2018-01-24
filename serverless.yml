@@ -7,7 +7,7 @@ provider:
   region: ap-southeast-1
   stage: master
   runtime: nodejs6.10
-  memorySize: 128
+  memorySize: 256
 
 functions:
   lambda:

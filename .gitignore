@@ -12,3 +12,6 @@ dist
 
 # Serverless deploy dir
 .serverless/
+
+# nuxt-es5
+nuxt-es5/

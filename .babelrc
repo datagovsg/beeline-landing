@@ -1,0 +1,6 @@
+{
+  "only": "nuxt",
+  "presets": [
+    [ "env", { "targets": { "node": "6.10" } } ],
+  ],
+}
