@@ -17,12 +17,7 @@ function makeApp() {
   nuxtConfig.dev = false
   const nuxt = new Nuxt(nuxtConfig)
 
-  const awsServerlessExpressMiddleware = require('aws-serverless-express/middleware')
-  const app = require('express')()
-
-  app.use(awsServerlessExpressMiddleware.eventContext())
-  app.use(nuxt.render)
-  return app
+  return nuxt.render
 }
 
 module.exports.main = (event, context) => {
