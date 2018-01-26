@@ -11,7 +11,7 @@ const nuxt = new Nuxt(nuxtConfig)
 const awsServerlessExpressMiddleware = require('aws-serverless-express/middleware')
 const awsServerlessExpress = require('aws-serverless-express')
 const app = require('express')()
-const server = awsServerlessExpress.createServer(app)
+const server = awsServerlessExpress.createServer(app, undefined, ['image/png', 'image/x-icon', 'application/octet-stream'])
 
 app.use(awsServerlessExpressMiddleware.eventContext())
 app.use(nuxt.render)
