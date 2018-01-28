@@ -24,7 +24,7 @@
     "lodash": "^4.17.4",
     "mdi": "^1.9.33",
     "node-sass": "^4.5.3",
-    "nuxt": "^1.1.1",
+    "nuxt": "^1.2.1",
     "object.values": "^1.0.4",
     "sass-loader": "^6.0.6",
     "util.promisify": "^1.0.0",
