@@ -69,7 +69,7 @@
             </ol>
 
             <transition name="vanish">
-              <div v-if="selectedRoute === route && route.requests.length >= 15" class="share-tip">
+              <div v-if="selectedRoute === route && route.matchingRequests.length >= 15" class="share-tip">
                 <p>
                   <i class="glyphicon glyphicon-bell" />
                   There are at least 15 people with similar suggestions!
@@ -278,7 +278,7 @@ export default {
       }
     },
     countPeople (route) {
-      return route.requests.length
+      return route.matchingRequests.length
     },
     panToRoute(route) {
       // pan to the stops lat lng
@@ -310,6 +310,7 @@ export default {
       .then((r) => {
         this.routes = r.map(route => ({
           ...route,
+          matchingRequests: route.requests.filter(req => Math.abs(req.time - this.time) <= 1800e3),
           stops: fixWrongTime(route.stops, this.time)
         }))
 
