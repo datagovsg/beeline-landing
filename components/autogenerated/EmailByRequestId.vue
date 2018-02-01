@@ -23,7 +23,7 @@ export default {
       if (this.auth.token) {
         return axios.get(`https://api.beeline.sg/suggestions/web/${this.requestId}`, {
           headers: {
-            authorization: `Bearer ${this.token}`
+            authorization: `Bearer ${this.auth.token}`
           }
         })
           .then((response) => response.data.email)
