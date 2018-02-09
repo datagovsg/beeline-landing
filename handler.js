@@ -8,8 +8,6 @@ const BINARY_TYPES = [
 ]
 const awsServerlessExpress = require('aws-serverless-express')
 
-let serverPromise
-
 function makeApp() {
   const { Nuxt } = require('./nuxt-es5')
 
@@ -26,9 +24,9 @@ module.exports.main = (event, context) => {
     context.app = app
   }
 
-  if (!serverPromise) {
-    serverPromise =
-      Promise.resolve(awsServerlessExpress.createServer(app, undefined, BINARY_TYPES))
+  const server = context.server || awsServerlessExpress.createServer(app, undefined, BINARY_TYPES)
+  if (!context.server) {
+    context.server = server
   }
 
   // workaround for double gzip encoding issue
@@ -37,5 +35,7 @@ module.exports.main = (event, context) => {
 
   console.log('proxying event=', event)
 
-  serverPromise.then((server) => awsServerlessExpress.proxy(server, event, context))
+  const c = Object.assign({}, context)
+  delete c.server
+  awsServerlessExpress.proxy(server, event, c)
 }
