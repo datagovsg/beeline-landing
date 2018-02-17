@@ -18,24 +18,16 @@ function makeApp() {
   return nuxt.render
 }
 
+const serverPromise = Promise.resolve()
+  .then(makeApp)
+  .then(app => awsServerlessExpress.createServer(app, undefined, BINARY_TYPES))
+
 module.exports.main = (event, context) => {
-  const app = context.app || makeApp()
-  if (!context.app) {
-    context.app = app
-  }
-
-  const server = context.server || awsServerlessExpress.createServer(app, undefined, BINARY_TYPES)
-  if (!context.server) {
-    context.server = server
-  }
-
   // workaround for double gzip encoding issue
   // HTTP gzip encoding should be done higher-up via something like CloudFront/CloudFlare
   event.headers['Accept-Encoding'] = 'identity'
 
   console.log('proxying event=', event)
 
-  const c = Object.assign({}, context)
-  delete c.server
-  awsServerlessExpress.proxy(server, event, c)
+  serverPromise.then(server => awsServerlessExpress.proxy(server, event, context))
 }
