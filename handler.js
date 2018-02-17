@@ -9,7 +9,7 @@ const BINARY_TYPES = [
 const awsServerlessExpress = require('aws-serverless-express')
 
 function makeApp() {
-  const { Nuxt } = require('./nuxt-es5')
+  const Nuxt = require('./nuxt-es5/core/nuxt')
 
   let nuxtConfig = require('./nuxt.config.js')
   nuxtConfig.dev = false
