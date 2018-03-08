@@ -9,7 +9,7 @@
     "node": "8.x.x"
   },
   "dependencies": {
-    "auth0-js": "^8.12.1",
+    "auth0-js": "^9.3.2",
     "axios": "^0.16.2",
     "bootstrap": "^3.3.7",
     "chart.js": "^2.7.2",
@@ -21,7 +21,7 @@
     "lodash": "^4.17.4",
     "mdi": "^1.9.33",
     "node-sass": "^4.5.3",
-    "nuxt": "^1.0.0",
+    "nuxt": "^1.4.0",
     "sass-loader": "^6.0.6",
     "vue-chartjs": "^2.8.2",
     "vue-meta": "^1.4.2",
