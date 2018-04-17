@@ -12,9 +12,10 @@
 
       <div v-if="showErrorDetails">
         <hr/>
-        <ul>
+        <ul style="word-wrap: break-word">
           <li>{{ debug.originalHash }}</li>
           <li>{{ debug.redirectTo }}</li>
+          <li>{{ debug.localStorage }}</li>
         </ul>
       </div>
       <div v-else>
@@ -31,6 +32,7 @@
 
 <script>
 import RequiresAuth from '../mixins/RequiresAuth'
+import querystring from 'querystring'
 
 export default {
   layout: 'landing',
@@ -47,7 +49,17 @@ export default {
 
     this.auth.getAuth0Instance().then((auth0) => {
       this.debug = {
-        originalHash: window.location.hash,
+        originalHash: {
+          ...querystring.parse(window.location.hash.replace(/^#?/, '')),
+          id_token: '[redacted]',
+          refresh_token: '[redacted]',
+          access_token: '[redacted]',
+        },
+        localStorage: JSON.stringify({
+          ...window.localStorage,
+          idToken: '[redacted]',
+          refreshToken: '[redacted]',
+        }),
         redirectTo: window.sessionStorage.redirectAfterLoginTo,
       }
 
