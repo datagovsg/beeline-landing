@@ -9,6 +9,19 @@
     There was an error logging you in:
     <div class="alert alert-warning">
       {{ error }}
+
+      <div v-if="showErrorDetails">
+        <hr/>
+        <ul>
+          <li>{{ debug.originalHash }}</li>
+          <li>{{ debug.redirectTo }}</li>
+        </ul>
+      </div>
+      <div v-else>
+        <a href="#"  @click.prevent="showErrorDetails = true">
+          (tap / click here to show details)
+        </a>
+      </div>
     </div>
   </div>
 </template>
@@ -25,12 +38,19 @@ export default {
   data () {
     return {
       error: null,
+      showErrorDetails: false,
+      debug: null,
     }
   },
   async mounted () {
     this.auth._disableTokenCheck()
 
     this.auth.getAuth0Instance().then((auth0) => {
+      this.debug = {
+        originalHash: window.location.hash,
+        redirectTo: window.sessionStorage.redirectAfterLoginTo,
+      }
+
       auth0.parseHash({hash: window.location.hash}, (err, result) => {
         if (err) {
           console.error(err)
