@@ -1,45 +1,76 @@
 <template>
   <div>
-    <EditorHeader />
-    <SearchBar />
-    <nuxt/>
+    <!--
+      Any emails in the code will be messed up by CloudFlare, and then Vue will
+      choke because the DOM does not match the virtual DOM
+    -->
+    <span v-html="'<!--email_off-->'"></span>
+    <!-- Static navbar -->
+    <LandingNav />
+    <nuxt :nuxtChildKey="$route.path" />
+    <hr class="divider">
+    <LandingFooter />
+    <span v-html="'<!--/email_off-->'"></span>
   </div>
 </template>
+
+<style>
+.vanish-enter-active, .vanish-leave-active {
+  transition: all 0.3s;
+}
+.vanish-enter, .vanish-leave-to {
+  max-height: 0;
+  /*transform: scale(0, 0);*/
+  opacity: 0;
+}
+.vanish-enter-to, .vanish-leave {
+  max-height: 999px;
+  /*transform: scale(1.0, 1.0);*/
+  opacity: 1.0;
+}
+</style>
+
 <script>
-import {mapMutations} from 'vuex'
-import EditorHeader from '~/components/EditorHeader'
-import SearchBar from '~/components/SearchBar'
+import LandingNav from '~/components/landing/Nav.vue'
+import LandingFooter from '~/components/landing/Footer.vue'
 
 export default {
   components: {
-    EditorHeader, SearchBar,
+    LandingNav, LandingFooter
+  },
+  head () {
+    return {
+      link: [
+        {rel: 'stylesheet', href: '/css/animate.css'},
+        {rel: 'stylesheet', href: '/css/style.css'},
+        {
+          href: 'https://fonts.googleapis.com/css?family=Lato:400,300',
+          rel: 'stylesheet',
+          type: 'text/css'
+        }
+      ],
+      script: [
+        // {src: 'js/wow.min.js'},
+        {src: 'https://use.fontawesome.com/e1c177a50d.js'},
+      ]
+    }
   },
   mounted () {
-    this.updateWithResult({
-      idToken: window.localStorage.idToken,
-      refreshToken: window.localStorage.refreshToken,
-    })
-  },
-  methods: {
-    ...mapMutations('login', ['updateWithResult']),
+    /* eslint-disable */
+      (function(i, s, o, g, r, a, m) {
+        i['GoogleAnalyticsObject'] = r;
+        i[r] = i[r] || function() {
+          (i[r].q = i[r].q || []).push(arguments)
+        }, i[r].l = 1 * new Date();
+        a = s.createElement(o),
+          m = s.getElementsByTagName(o)[0];
+        a.async = 1;
+        a.src = g;
+        m.parentNode.insertBefore(a, m)
+      })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
+
+      ga('create', 'UA-79537959-3', 'auto');
+      ga('send', 'pageview');
   }
 }
 </script>
-<style>
-html
-{
-  font-family: "Source Sans Pro", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  font-size: 16px;
-  word-spacing: 1px;
-  -ms-text-size-adjust: 100%;
-  -webkit-text-size-adjust: 100%;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-font-smoothing: antialiased;
-  box-sizing: border-box;
-}
-*, *:before, *:after
-{
-  box-sizing: border-box;
-  margin: 0;
-}
-</style>

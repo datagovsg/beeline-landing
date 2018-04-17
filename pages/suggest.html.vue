@@ -378,7 +378,6 @@ const allCrowdstartedRoutes = axios.get('https://api.beeline.sg/crowdstart/statu
  })
 
 export default {
-  layout: 'landing',
   components: {
     RequestsTimeHistogram,
     SimilarRequests,

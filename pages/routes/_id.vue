@@ -71,7 +71,6 @@ import dateformat from 'dateformat'
 import PageDisqusThread from '~/components/PageDisqusThread'
 
 export default {
-  layout: 'landing',
   props: ['id'],
   head () {
 // https://moz.com/blog/meta-data-templates-123
