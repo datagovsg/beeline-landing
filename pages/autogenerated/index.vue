@@ -197,8 +197,6 @@ import {getReverseGeocodeString} from '~/util/ReverseGeocoder'
 // http://localhost:8080/routing/begin?startLat=1.4431762307345994&startLng=103.79058837890625&endLat=1.3003949349844803&endLng=103.79264831542969&time=0&settings=%7B%22maxDetourMinutes%22%3A2%2C%22startClusterRadius%22%3A3000%2C%22endClusterRadius%22%3A3000%2C%22startWalkingDistance%22%3A300%2C%22endWalkingDistance%22%3A300%2C%22dataSource%22%3A%22suggestions%22%7D%22
 
 export default {
-  layout: 'landing',
-
   async asyncData (params) {
     const v1 = {
       lat: parseFloat(params.query.startLat),

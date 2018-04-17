@@ -175,7 +175,6 @@ const MAX_WALKING_DISTANCE = 500
 const MAX_DISTANCE = 2000
 
 export default {
-  layout: 'landing',
   props: ['id'],
   mixins: [RequiresAuth],
   head () {

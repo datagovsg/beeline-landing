@@ -31,7 +31,6 @@
 import querystring from 'querystring'
 
 export default {
-  layout: 'landing',
   head () {
     return {
       script: [

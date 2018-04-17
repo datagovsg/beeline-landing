@@ -33,7 +33,6 @@
 import RequiresAuth from '../mixins/RequiresAuth'
 
 export default {
-  layout: 'landing',
   mixins: [RequiresAuth],
   data () {
     return {

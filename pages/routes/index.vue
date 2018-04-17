@@ -115,7 +115,6 @@ import {VueTabs, VTab} from 'vue-nav-tabs'
 import UibPagination from '~/components/UibPagination'
 
 export default {
-  layout: 'landing',
   data () {
     return {
       now: new Date(),
