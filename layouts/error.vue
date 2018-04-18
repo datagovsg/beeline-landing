@@ -1,15 +1,11 @@
 <template>
   <div>
-    <!-- Static navbar -->
-    <LandingNav />
     <div class="container suggest">
       <h1>Oops!</h1>
       <p v-if="error.statusCode === 404">The page you are looking for is not found!</p>
       <p v-else>There was an error loading the page. ({{error.statusCode}})</p>
       <p><a href="/">Return to the home page</a></p>
     </div>
-    <hr class="divider">
-    <LandingFooter />
   </div>
 </template>
 
