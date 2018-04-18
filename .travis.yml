@@ -32,7 +32,7 @@ install:
   - sed -i -e "s/@TRAVIS_BRANCH/$TRAVIS_BRANCH/g" eb-config.yml
   - mv eb-config.yml .elasticbeanstalk/config.yml
 script:
-  - docker login -u $DOCKER_USER -p $DOCKER_PASSWORD
+  - echo "$DOCKER_PASSWORD" | docker login -u $DOCKER_USER --password-stdin
   - export REPO=$TRAVIS_REPO_SLUG
   - export TAG=`if [ "$TRAVIS_BRANCH" == "master" ]; then echo "latest"; else echo $TRAVIS_BRANCH ; fi`
   - echo "Building image $REPO:$TAG"
