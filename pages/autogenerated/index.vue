@@ -295,7 +295,7 @@ export default {
         startLng: this.$route.query.startLng,
         endLat: this.$route.query.endLat,
         endLng: this.$route.query.endLng,
-        time: 8.5 * 3600e3,
+        time: this.$route.query.time,
         settings: JSON.stringify({
           maxDetourMinutes: 2.5,
           startClusterRadius: 3000,
