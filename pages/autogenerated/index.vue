@@ -297,7 +297,7 @@ export default {
         endLng: this.$route.query.endLng,
         time: this.$route.query.time,
         settings: JSON.stringify({
-          maxDetourMinutes: 2.5,
+          maxDetourMinutes: 6,
           startClusterRadius: 3000,
           endClusterRadius: 3000,
           startWalkingDistance: 400,
