@@ -60,8 +60,9 @@
         </div>
         <div>
           <label>
-            Start Walking Distance
-            <input type="text" v-model.number.lazy="settings.startWalkingDistance" />
+            Created Since
+            <input type="text" :value="new Date(settings.createdSince).toISOString()"
+              @change="settings.createdSince = new Date($event.target.value).getTime()" />
           </label>
         </div>
         <div>
@@ -306,6 +307,7 @@ export default {
         startWalkingDistance: 400,
         endWalkingDistance: 400,
         imputedDwellTime: 60000,
+        createdSince: new Date(2017, 0, 1).getTime(),
         dataSource: 'suggestions'
       }
     }
