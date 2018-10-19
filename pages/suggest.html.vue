@@ -570,7 +570,8 @@ export default {
         emailVerification: {
           type: 'auth0',
           data: this.auth.token
-        }
+        },
+        daysOfWeek: {Mon: true, Tue: true, Wed: true, Thu: true, Fri: true, Sat: false, Sun: false},
       }
       if (this.suggestion.referrer) {
         Object.assign(suggestionData, {
