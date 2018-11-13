@@ -95,11 +95,11 @@
                   suggestions. Once there is a route with 15 people,
                   you can email us to crowdstart it!
                 </p>
-
+<!--
                 <p>
                   Suggestion submission page:
                   <ShareLink link="https://www.beeline.sg/suggest.html" />
-                </p>
+                </p>-->
               </div>
             </transition>
           </div>

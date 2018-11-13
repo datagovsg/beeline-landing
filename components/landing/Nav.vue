@@ -17,16 +17,16 @@
             <li>
               <a href="/">Home</a>
             </li>
-<!-- 
+<!--
             <nuxt-link tag="li" active-class="active"
               to="/routes">
               <a>Routes</a>
             </nuxt-link> -->
-
+<!--
             <nuxt-link tag="li" active-class="active"
               to="/suggest.html" target="_blank">
               <a>Suggest</a>
-            </nuxt-link>
+            </nuxt-link>-->
 
             <li><a class="link" href="https://www.facebook.com/beelinesg/?fref=ts" target="_blank"><span class="fa-lg">
                 <i class="fa fa-facebook-square"></i>
